@@ -1,6 +1,7 @@
 package com.example.ecommerce;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -73,7 +74,7 @@ public class ProductAdapter extends BaseAdapter {
                 "★ %.1f", product.averageRating));
         holder.stock.setText("Còn " + product.stockQuantity + " sp");
         holder.sold.setText("(" + product.reviewCount + ") · Đã bán " + product.soldQuantity);
-        holder.image.setImageResource(R.drawable.ic_empty_box);
+        holder.image.setImageResource(R.drawable.ic_product_image_placeholder);
 
         Bitmap bitmap = loadAssetImage(product.imagePath);
         if (bitmap != null) {
@@ -83,8 +84,11 @@ public class ProductAdapter extends BaseAdapter {
             holder.image.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         }
 
-        convertView.setOnClickListener(v ->
-                Toast.makeText(context, "Chi tiết: " + product.name, Toast.LENGTH_SHORT).show());
+        convertView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ProductDetailActivity.class);
+            intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT_ID, product.id);
+            context.startActivity(intent);
+        });
         return convertView;
     }
 

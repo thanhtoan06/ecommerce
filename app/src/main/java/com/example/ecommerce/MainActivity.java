@@ -73,11 +73,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         WindowCompat.enableEdgeToEdge(getWindow());
         databaseHelper = new DatabaseHelper(this);
-        if (databaseHelper.getSessionUserId() < 0) {
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-            return;
-        }
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -127,8 +122,20 @@ public class MainActivity extends AppCompatActivity {
         if (selectedIndex == 0) {
             findViewById(R.id.mainContent).setVisibility(View.VISIBLE);
         } else {
+            if (databaseHelper.getSessionUserId() < 0) {
+                startActivity(new Intent(this, LoginActivity.class));
+                return;
+            }
             String[] names = {"", "Giỏ hàng", "Đơn hàng", "Trang cá nhân"};
             Toast.makeText(this, names[selectedIndex] + " sẽ được triển khai tiếp", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (databaseHelper != null) {
+            setupHeader();
         }
     }
 
@@ -137,6 +144,14 @@ public class MainActivity extends AppCompatActivity {
         TextView tvGreeting = findViewById(R.id.tvUserGreeting);
         TextView tvEmail = findViewById(R.id.tvUserEmail);
         ImageView ivAvatar = findViewById(R.id.ivHeaderAvatar);
+        View layoutUserInfo = findViewById(R.id.layoutUserInfo);
+        View layoutGuestActions = findViewById(R.id.layoutGuestActions);
+
+        findViewById(R.id.btnHomeLogin).setOnClickListener(v ->
+                startActivity(new Intent(this, LoginActivity.class)));
+        findViewById(R.id.btnHomeRegister).setOnClickListener(v ->
+                startActivity(new Intent(this, RegisterActivity.class)));
+
         if (cursor != null && cursor.moveToFirst()) {
             String displayName = cursor.getString(cursor.getColumnIndexOrThrow("display_name"));
             String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
@@ -144,6 +159,11 @@ public class MainActivity extends AppCompatActivity {
             tvGreeting.setText("Xin chào, " + displayName);
             tvEmail.setText(email);
             loadAvatar(ivAvatar, avatarPath);
+            layoutUserInfo.setVisibility(View.VISIBLE);
+            layoutGuestActions.setVisibility(View.GONE);
+        } else {
+            layoutUserInfo.setVisibility(View.GONE);
+            layoutGuestActions.setVisibility(View.VISIBLE);
         }
         if (cursor != null) {
             cursor.close();

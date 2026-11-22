@@ -51,7 +51,12 @@ public class RegisterActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBarRegister);
         ivAvatar = findViewById(R.id.ivRegisterAvatar);
 
-        findViewById(R.id.btnBackToHome).setOnClickListener(v -> finish());
+        findViewById(R.id.btnBackToHome).setOnClickListener(v -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        });
         findViewById(R.id.btnBackToLogin).setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
             finish();

@@ -21,8 +21,8 @@
             android:contentDescription="Ảnh sản phẩm"
             android:scaleType="fitCenter"
             android:padding="6dp"
-            android:src="@drawable/ic_empty_box"
-            tools:src="@mipmap/ic_launcher" />
+            android:src="@drawable/ic_product_image_placeholder"
+            tools:src="@drawable/ic_product_image_placeholder" />
     </FrameLayout>
 
     <LinearLayout

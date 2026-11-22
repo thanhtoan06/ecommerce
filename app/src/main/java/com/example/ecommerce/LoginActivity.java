@@ -31,6 +31,9 @@ public class LoginActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBarLogin);
 
         findViewById(R.id.btnBackToHome).setOnClickListener(v -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
             finish();
         });
         findViewById(R.id.btnRegister).setOnClickListener(v ->

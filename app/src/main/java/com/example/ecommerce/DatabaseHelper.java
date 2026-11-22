@@ -489,6 +489,64 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(productId)});
     }
 
+    public boolean addToCart(long productId, int quantity) {
+        long userId = getSessionUserId();
+        if (userId < 0 || productId <= 0 || quantity <= 0) {
+            return false;
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor product = db.rawQuery(
+                "SELECT stock_quantity FROM products WHERE id = ?",
+                new String[]{String.valueOf(productId)});
+        if (!product.moveToFirst()) {
+            product.close();
+            return false;
+        }
+        int stock = product.getInt(0);
+        product.close();
+
+        if (stock <= 0) {
+            return false;
+        }
+
+        Cursor cartItem = db.rawQuery(
+                "SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?",
+                new String[]{String.valueOf(userId), String.valueOf(productId)});
+        int existingQuantity = cartItem.moveToFirst() ? cartItem.getInt(1) : 0;
+        cartItem.close();
+
+        int finalQuantity = existingQuantity + quantity;
+        if (finalQuantity > stock) {
+            finalQuantity = stock;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put("user_id", userId);
+        values.put("product_id", productId);
+        values.put("quantity", finalQuantity);
+        if (existingQuantity > 0) {
+            return db.update(TABLE_CART_ITEMS, values,
+                    "user_id = ? AND product_id = ?",
+                    new String[]{String.valueOf(userId), String.valueOf(productId)}) == 1;
+        }
+        return db.insert(TABLE_CART_ITEMS, null, values) != -1;
+    }
+
+    public int getCartItemCount() {
+        long userId = getSessionUserId();
+        if (userId < 0) {
+            return 0;
+        }
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ?",
+                new String[]{String.valueOf(userId)});
+        int count = cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        cursor.close();
+        return count;
+    }
+
     private static String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
