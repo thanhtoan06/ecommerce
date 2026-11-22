@@ -6,4 +6,14 @@
     </style>
 
     <style name="Theme.Ecommerce" parent="Base.Theme.Ecommerce" />
+
+    <style name="AppToolbarBackButton" parent="Widget.AppCompat.ImageButton">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:contentDescription">Quay lại</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:src">@drawable/ic_arrow_back</item>
+        <item name="android:tint">@color/text_primary</item>
+    </style>
 </resources>

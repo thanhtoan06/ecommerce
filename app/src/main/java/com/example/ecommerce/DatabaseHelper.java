@@ -150,7 +150,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             long fashion = insertCategory(db, "Thời trang");
             long home = insertCategory(db, "Nhà cửa");
 
-            long demo = insertUser(db, "Nguyen Van Demo", "demo", "demo@shop.vn",
+            long demo = insertUser(db, "UserDemo", "demo", "demo@shop.vn",
                     "demo123", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM",
                     DEFAULT_AVATAR_PATH);
             long p1 = insertProduct(db, phones, "iPhone 15 128GB", 22990000,
@@ -237,11 +237,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             recalculateProductRating(db, p8);
             recalculateProductRating(db, p9);
             recalculateProductRating(db, p10);
-
-            ContentValues session = new ContentValues();
-            session.put("id", 1);
-            session.put("user_id", demo);
-            db.insert("app_session", null, session);
 
             db.setTransactionSuccessful();
         } finally {
@@ -361,7 +356,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put("display_name", displayName.trim());
-        values.put("username", username.trim());
+        values.put("username", username.trim().isEmpty() ? email.trim() : username.trim());
         values.put("email", email.trim());
         values.put("password_hash", hashPassword(password));
         values.put("phone", phone == null ? "" : phone.trim());
@@ -378,8 +373,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(
-                "SELECT id, password_hash FROM users WHERE username = ? OR email = ?",
-                new String[]{identity.trim(), identity.trim()});
+                "SELECT id, password_hash FROM users WHERE username = ? OR email = ? OR phone = ?",
+                new String[]{identity.trim(), identity.trim(), identity.trim()});
         if (cursor.moveToFirst()) {
             long userId = cursor.getLong(0);
             String storedHash = cursor.getString(1);
@@ -393,6 +388,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return -1;
+    }
+
+    public boolean resetPassword(String identity, String phone, String newPassword) {
+        if (identity == null || identity.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()
+                || newPassword == null || newPassword.length() < 6) {
+            return false;
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+        String value = identity.trim();
+        Cursor cursor = db.rawQuery(
+                "SELECT id FROM users WHERE phone = ? AND (username = ? OR email = ?)",
+                new String[]{phone.trim(), value, value});
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+
+        long userId = cursor.getLong(0);
+        cursor.close();
+        ContentValues values = new ContentValues();
+        values.put("password_hash", hashPassword(newPassword));
+        return db.update(TABLE_USERS, values, "id = ?",
+                new String[]{String.valueOf(userId)}) == 1;
     }
 
     public void setSessionUser(long userId) {
