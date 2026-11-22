@@ -415,6 +415,68 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(userId)}) == 1;
     }
 
+    public boolean updateCurrentUserProfile(String displayName, String username,
+                                            String phone, String address,
+                                            String avatarPath) {
+        long userId = getSessionUserId();
+        if (userId < 0
+                || displayName == null || displayName.trim().isEmpty()
+                || username == null || username.trim().isEmpty()) {
+            return false;
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor duplicate = db.rawQuery(
+                "SELECT id FROM users WHERE username = ? AND id != ?",
+                new String[]{username.trim(), String.valueOf(userId)});
+        boolean exists = duplicate.moveToFirst();
+        duplicate.close();
+        if (exists) {
+            return false;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put("display_name", displayName.trim());
+        values.put("username", username.trim());
+        values.put("phone", phone == null ? "" : phone.trim());
+        values.put("address", address == null ? "" : address.trim());
+        if (avatarPath != null && !avatarPath.trim().isEmpty()) {
+            values.put("avatar_path", avatarPath.trim());
+        }
+        return db.update(TABLE_USERS, values, "id = ?",
+                new String[]{String.valueOf(userId)}) == 1;
+    }
+
+    public boolean changeCurrentUserPassword(String oldPassword,
+                                             String newPassword) {
+        long userId = getSessionUserId();
+        if (userId < 0
+                || oldPassword == null
+                || newPassword == null
+                || newPassword.length() < 6) {
+            return false;
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT password_hash FROM users WHERE id = ?",
+                new String[]{String.valueOf(userId)});
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+        String storedHash = cursor.getString(0);
+        cursor.close();
+        if (!hashPassword(oldPassword).equals(storedHash)) {
+            return false;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put("password_hash", hashPassword(newPassword));
+        return db.update(TABLE_USERS, values, "id = ?",
+                new String[]{String.valueOf(userId)}) == 1;
+    }
+
     public void setSessionUser(long userId) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
