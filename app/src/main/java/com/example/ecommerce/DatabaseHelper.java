@@ -179,31 +179,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             insertCartItem(db, demo, p7, 1);
 
             long orderDelivering = insertOrder(db, demo, now, STATUS_DELIVERING, 3230000,
-                    "Nguyen Van Demo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Giao giờ hành chính");
+                    "UserDemo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Giao giờ hành chính");
             insertOrderDetail(db, orderDelivering, p5, 1, 2450000);
             insertOrderDetail(db, orderDelivering, p10, 1, 780000);
 
             long orderReceived1 = insertOrder(db, demo, "2026-11-17 09:30:00", STATUS_RECEIVED, 50470000,
-                    "Nguyen Van Demo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Giao tại nhà");
+                    "UserDemo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Giao tại nhà");
             insertOrderDetail(db, orderReceived1, p1, 1, 22990000);
             insertOrderDetail(db, orderReceived1, p2, 1, 18990000);
             insertOrderDetail(db, orderReceived1, p3, 1, 8490000);
 
             long orderReceived2 = insertOrder(db, demo, "2026-11-15 10:30:00", STATUS_RECEIVED, 21140000,
-                    "Nguyen Van Demo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Để tại sảnh");
+                    "UserDemo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Để tại sảnh");
             insertOrderDetail(db, orderReceived2, p4, 1, 10500000);
             insertOrderDetail(db, orderReceived2, p5, 1, 2450000);
             insertOrderDetail(db, orderReceived2, p6, 1, 1590000);
             insertOrderDetail(db, orderReceived2, p7, 1, 690000);
 
             long orderReceived3 = insertOrder(db, demo, "2026-11-10 14:15:00", STATUS_RECEIVED, 28420000,
-                    "Nguyen Van Demo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Giao buoi toi");
+                    "UserDemo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Giao buoi toi");
             insertOrderDetail(db, orderReceived3, p8, 1, 24990000);
             insertOrderDetail(db, orderReceived3, p9, 1, 2650000);
             insertOrderDetail(db, orderReceived3, p10, 1, 780000);
 
             long orderCancelled = insertOrder(db, demo, "2026-11-05 09:00:00", STATUS_CANCELLED, 1590000,
-                    "Nguyen Van Demo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Hủy do đổi địa chỉ");
+                    "UserDemo", "0901234567", "123 Nguyen Hue, Quan 1, TP.HCM", "Hủy do đổi địa chỉ");
             insertOrderDetail(db, orderCancelled, p6, 1, 1590000);
 
             insertReview(db, demo, p1, orderReceived1, 5,
