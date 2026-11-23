@@ -8,14 +8,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
+    public static final String EXTRA_LOGIN_REQUIRED = "login_required";
+
     private EditText edtIdentity;
     private EditText edtPassword;
+    private ImageView togglePassword;
     private Button btnLogin;
     private ProgressBar progressBar;
     private boolean passwordVisible;
@@ -41,9 +43,14 @@ public class LoginActivity extends AppCompatActivity {
         findViewById(R.id.tvForgotPassword).setOnClickListener(v ->
                 startActivity(new Intent(this, ResetPasswordActivity.class)));
 
-        ImageView togglePassword = findViewById(R.id.btnTogglePassword);
+        togglePassword = findViewById(R.id.btnTogglePassword);
         togglePassword.setOnClickListener(v -> togglePasswordVisibility());
         btnLogin.setOnClickListener(v -> login());
+        if (savedInstanceState == null
+                && getIntent().getBooleanExtra(EXTRA_LOGIN_REQUIRED, false)) {
+            Toast.makeText(this, "Vui lòng đăng nhập tài khoản để tiếp tục",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void togglePasswordVisibility() {
@@ -52,6 +59,12 @@ public class LoginActivity extends AppCompatActivity {
                 ? null
                 : PasswordTransformationMethod.getInstance());
         edtPassword.setSelection(edtPassword.getText().length());
+        togglePassword.setImageResource(passwordVisible
+                ? R.drawable.ic_visibility
+                : R.drawable.ic_visibility_off);
+        togglePassword.setContentDescription(passwordVisible
+                ? "Ẩn mật khẩu"
+                : "Hiện mật khẩu");
     }
 
     private void login() {
@@ -74,6 +87,7 @@ public class LoginActivity extends AppCompatActivity {
 
         long userId = new DatabaseHelper(this).loginUser(identity, password);
         if (userId >= 0) {
+            Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {

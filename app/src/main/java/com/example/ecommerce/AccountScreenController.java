@@ -7,62 +7,68 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ScrollView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 
-public class AccountTabController {
+public class AccountScreenController {
     private final AppCompatActivity activity;
     private final View root;
     private final DatabaseHelper databaseHelper;
     private String currentDisplayName = "";
-    private String currentUsername = "";
     private String currentPhone = "";
     private String currentAddress = "";
-    private String currentAvatarPath = "";
 
-    public AccountTabController(AppCompatActivity activity, View root,
-                                DatabaseHelper databaseHelper) {
+    public AccountScreenController(AppCompatActivity activity, View root,
+                                   DatabaseHelper databaseHelper) {
         this.activity = activity;
         this.root = root;
         this.databaseHelper = databaseHelper;
     }
 
     public void refresh() {
-        Cursor cursor = databaseHelper.getSessionUser();
-        if (cursor == null || !cursor.moveToFirst()) {
-            hide();
-            return;
+        String displayName;
+        String username;
+        String avatarPath;
+        String email;
+        String phone;
+        String address;
+        try (Cursor cursor = databaseHelper.getSessionUser()) {
+            if (cursor == null || !cursor.moveToFirst()) {
+                hide();
+                return;
+            }
+            displayName = cursor.getString(cursor.getColumnIndexOrThrow("display_name"));
+            username = cursor.getString(cursor.getColumnIndexOrThrow("username"));
+            avatarPath = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
+            email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+            phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
+            address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
         }
 
-        currentDisplayName = cursor.getString(cursor.getColumnIndexOrThrow("display_name"));
-        currentUsername = cursor.getString(cursor.getColumnIndexOrThrow("username"));
-        currentAvatarPath = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
-        ((TextView) root.findViewById(R.id.tvAccountName)).setText(currentDisplayName);
+        currentDisplayName = displayName;
+        currentPhone = phone == null ? "" : phone;
+        currentAddress = address == null ? "" : address;
+        ((TextView) root.findViewById(R.id.tvAccountName)).setText(displayName);
         TextView tvDisplayName = root.findViewById(R.id.tvAccountDisplayName);
         if (tvDisplayName != null) {
-            tvDisplayName.setText(currentDisplayName);
+            tvDisplayName.setText(displayName);
         }
-        String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
         ((TextView) root.findViewById(R.id.tvAccountEmail)).setText(email);
         TextView emailDetail = root.findViewById(R.id.tvAccountEmailDetail);
         if (emailDetail != null) emailDetail.setText(email);
         TextView usernameDetail = root.findViewById(R.id.tvAccountUsername);
-        if (usernameDetail != null) usernameDetail.setText(currentUsername);
+        if (usernameDetail != null) usernameDetail.setText(username);
 
-        String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
-        String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-        currentPhone = phone == null ? "" : phone;
-        currentAddress = address == null ? "" : address;
         ((TextView) root.findViewById(R.id.tvAccountPhone)).setText(
                 currentPhone.trim().isEmpty() ? "Chưa cập nhật" : currentPhone);
         ((TextView) root.findViewById(R.id.tvAccountAddress)).setText(
                 currentAddress.trim().isEmpty() ? "Chưa cập nhật" : currentAddress);
-        loadAvatar((ImageView) root.findViewById(R.id.ivAccountAvatar), currentAvatarPath);
-        cursor.close();
+        loadAvatar((ImageView) root.findViewById(R.id.ivAccountAvatar), avatarPath);
 
         View rowDisplayName = root.findViewById(R.id.rowDisplayName);
         View rowPhone = root.findViewById(R.id.rowPhone);
@@ -91,11 +97,19 @@ public class AccountTabController {
             changePassword.setOnClickListener(v ->
                     activity.startActivity(new Intent(activity, ChangePasswordActivity.class)));
         }
-        ((MaterialButton) root.findViewById(R.id.btnLogout)).setOnClickListener(v -> {
-            databaseHelper.logout();
-            activity.startActivity(new Intent(activity, LoginActivity.class));
-            activity.finish();
-        });
+        ((MaterialButton) root.findViewById(R.id.btnLogout)).setOnClickListener(v ->
+                new AlertDialog.Builder(activity)
+                        .setTitle("Đăng xuất")
+                        .setMessage("Bạn có chắc muốn đăng xuất không?")
+                        .setNegativeButton("Hủy", null)
+                        .setPositiveButton("Đăng xuất", (dialog, which) -> {
+                            databaseHelper.logout();
+                            Toast.makeText(activity, "Bạn đã đăng xuất",
+                                    Toast.LENGTH_SHORT).show();
+                            activity.startActivity(new Intent(activity, LoginActivity.class));
+                            activity.finish();
+                        })
+                        .show());
     }
 
     private void loadAvatar(ImageView imageView, String avatarPath) {
@@ -115,18 +129,11 @@ public class AccountTabController {
     }
 
 
-    public void updateProfileField(String field, String value) {
-        if ("avatar".equals(field)) {
-            boolean saved = databaseHelper.updateCurrentUserProfile(
-                    currentDisplayName, currentUsername, currentPhone,
-                    currentAddress, value);
-            if (saved) refresh();
-        }
-    }
-
-    public void show() {
-        refresh();
-        root.setVisibility(View.VISIBLE);
+    public boolean updateAvatar(String avatarPath) {
+        boolean saved = databaseHelper.updateCurrentUserProfile(
+                currentDisplayName, currentPhone, currentAddress, avatarPath);
+        if (saved) refresh();
+        return saved;
     }
 
     public void hide() {

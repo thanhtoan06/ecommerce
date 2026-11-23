@@ -145,7 +145,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="210dp"
-                app:cardBackgroundColor="#EFF6FF"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/card_stroke"

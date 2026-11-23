@@ -19,10 +19,12 @@ public class EditNameActivity extends AppCompatActivity {
         edtName = findViewById(R.id.edtDisplayName);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        Cursor cursor = databaseHelper.getSessionUser();
-        if (cursor != null && cursor.moveToFirst()) {
+        try (Cursor cursor = databaseHelper.getSessionUser()) {
+            if (cursor == null || !cursor.moveToFirst()) {
+                finish();
+                return;
+            }
             edtName.setText(cursor.getString(cursor.getColumnIndexOrThrow("display_name")));
-            cursor.close();
         }
         edtName.setSelection(edtName.getText().length());
 
@@ -36,16 +38,21 @@ public class EditNameActivity extends AppCompatActivity {
             edtName.requestFocus();
             return;
         }
-        Cursor cursor = databaseHelper.getSessionUser();
-        if (cursor == null || !cursor.moveToFirst()) return;
-        String username = cursor.getString(cursor.getColumnIndexOrThrow("username"));
-        String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
-        String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-        String avatar = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
-        cursor.close();
-        if (databaseHelper.updateCurrentUserProfile(name, username, phone, address, avatar)) {
+        String phone;
+        String address;
+        String avatar;
+        try (Cursor cursor = databaseHelper.getSessionUser()) {
+            if (cursor == null || !cursor.moveToFirst()) return;
+            phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
+            address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+            avatar = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
+        }
+        if (databaseHelper.updateCurrentUserProfile(name, phone, address, avatar)) {
             Toast.makeText(this, "Đã lưu tên người dùng", Toast.LENGTH_SHORT).show();
             finish();
+        } else {
+            Toast.makeText(this, "Không thể cập nhật tên người dùng",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 }

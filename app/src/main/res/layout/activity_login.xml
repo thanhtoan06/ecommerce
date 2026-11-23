@@ -149,7 +149,7 @@
                     android:layout_centerVertical="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
-                    android:contentDescription="Ẩn hiện mật khẩu"
+                    android:contentDescription="Hiện mật khẩu"
                     android:focusable="true"
                     android:padding="12dp"
                     android:src="@drawable/ic_visibility_off"

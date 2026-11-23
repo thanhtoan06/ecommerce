@@ -9,7 +9,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class HomeActivity extends AppCompatActivity {
-    private HomeTabController homeController;
+    private HomeScreenController homeController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class HomeActivity extends AppCompatActivity {
                     return insets;
                 });
 
-        homeController = new HomeTabController(this, findViewById(android.R.id.content));
+        homeController = new HomeScreenController(this, findViewById(android.R.id.content));
         BottomNavigationController.setupForActivity(this, 0);
     }
 

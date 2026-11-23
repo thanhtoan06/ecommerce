@@ -2,9 +2,11 @@ package com.example.ecommerce;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -15,6 +17,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private EditText edtPhone;
     private EditText edtPassword;
     private EditText edtConfirmPassword;
+    private boolean passwordVisible;
+    private boolean confirmPasswordVisible;
     private Button btnReset;
     private ProgressBar progressBar;
 
@@ -27,13 +31,38 @@ public class ResetPasswordActivity extends AppCompatActivity {
         edtPhone = findViewById(R.id.edtResetPhone);
         edtPassword = findViewById(R.id.edtResetPassword);
         edtConfirmPassword = findViewById(R.id.edtResetConfirmPassword);
+        ImageView passwordToggle = findViewById(R.id.btnToggleResetPassword);
+        ImageView confirmPasswordToggle = findViewById(R.id.btnToggleResetConfirmPassword);
         btnReset = findViewById(R.id.btnResetPassword);
         progressBar = findViewById(R.id.progressBarReset);
 
+        passwordToggle.setOnClickListener(v -> passwordVisible =
+                togglePasswordVisibility(edtPassword, passwordToggle, passwordVisible));
+        confirmPasswordToggle.setOnClickListener(v -> confirmPasswordVisible =
+                togglePasswordVisibility(
+                        edtConfirmPassword, confirmPasswordToggle, confirmPasswordVisible));
         findViewById(R.id.btnBackToLogin).setOnClickListener(v -> {
             finish();
         });
         btnReset.setOnClickListener(v -> resetPassword());
+    }
+
+    private boolean togglePasswordVisibility(
+            EditText passwordField,
+            ImageView toggle,
+            boolean currentlyVisible) {
+        boolean visible = !currentlyVisible;
+        passwordField.setTransformationMethod(visible
+                ? null
+                : PasswordTransformationMethod.getInstance());
+        passwordField.setSelection(passwordField.getText().length());
+        toggle.setImageResource(visible
+                ? R.drawable.ic_visibility
+                : R.drawable.ic_visibility_off);
+        toggle.setContentDescription(visible
+                ? "Ẩn mật khẩu"
+                : "Hiện mật khẩu");
+        return visible;
     }
 
     private void resetPassword() {
@@ -66,17 +95,26 @@ public class ResetPasswordActivity extends AppCompatActivity {
         btnReset.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
 
-        boolean reset = new DatabaseHelper(this).resetPassword(identity, phone, password);
-        if (reset) {
+        DatabaseHelper.PasswordResetResult result =
+                new DatabaseHelper(this).resetPassword(identity, phone, password);
+        if (result == DatabaseHelper.PasswordResetResult.SUCCESS) {
             Toast.makeText(this, "Đặt lại mật khẩu thành công", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         } else {
             progressBar.setVisibility(View.GONE);
             btnReset.setEnabled(true);
-            Toast.makeText(this,
-                    "Email/tên tài khoản và số điện thoại không khớp",
-                    Toast.LENGTH_SHORT).show();
+            if (result == DatabaseHelper.PasswordResetResult.SAME_AS_CURRENT) {
+                edtPassword.setError("Mật khẩu mới không được trùng mật khẩu hiện tại");
+                edtPassword.requestFocus();
+            } else if (result == DatabaseHelper.PasswordResetResult.ACCOUNT_NOT_FOUND) {
+                Toast.makeText(this,
+                        "Email/tên tài khoản và số điện thoại không khớp",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Không thể đặt lại mật khẩu. Vui lòng thử lại",
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

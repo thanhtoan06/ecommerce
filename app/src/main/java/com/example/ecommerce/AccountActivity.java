@@ -1,14 +1,12 @@
 package com.example.ecommerce;
 
-import android.os.Bundle;
 import android.net.Uri;
-import android.view.View;
-import android.widget.ImageView;
+import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -20,8 +18,7 @@ import java.io.InputStream;
 import java.util.UUID;
 
 public class AccountActivity extends AppCompatActivity {
-    private AccountTabController accountController;
-    private String selectedAvatarPath;
+    private AccountScreenController accountController;
 
     private final ActivityResultLauncher<String> avatarPicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), this::saveAvatar);
@@ -40,7 +37,7 @@ public class AccountActivity extends AppCompatActivity {
                     return insets;
                 });
 
-        accountController = new AccountTabController(this,
+        accountController = new AccountScreenController(this,
                 findViewById(android.R.id.content),
                 new DatabaseHelper(this));
         findViewById(R.id.ivAccountAvatar).setOnClickListener(v ->
@@ -80,10 +77,15 @@ public class AccountActivity extends AppCompatActivity {
                     output.write(buffer, 0, count);
                 }
             }
-            selectedAvatarPath = "avatars/" + fileName;
-            ImageView avatar = findViewById(R.id.ivAccountAvatar);
-            avatar.setImageURI(Uri.fromFile(destination));
-            accountController.updateProfileField("avatar", selectedAvatarPath);
+            String avatarPath = "avatars/" + fileName;
+            if (accountController.updateAvatar(avatarPath)) {
+                Toast.makeText(this, "Đã cập nhật ảnh đại diện",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                accountController.refresh();
+                Toast.makeText(this, "Không thể cập nhật ảnh đại diện",
+                        Toast.LENGTH_SHORT).show();
+            }
         } catch (Exception error) {
             Toast.makeText(this, "Không thể lưu ảnh đại diện", Toast.LENGTH_SHORT).show();
         }

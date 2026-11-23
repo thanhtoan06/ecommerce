@@ -52,21 +52,15 @@
                     android:layout_height="48dp"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_input"
+                    android:drawableStart="@drawable/ic_person"
+                    android:drawablePadding="10dp"
                     android:hint="Nhập tên người dùng"
                     android:inputType="textPersonName"
                     android:maxLines="1"
                     android:paddingHorizontal="14dp"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_tertiary"
-                    android:textSize="14sp"
-                    tools:text="UserDemo" />
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Tên này hiển thị trên Trang cá nhân."
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveName"

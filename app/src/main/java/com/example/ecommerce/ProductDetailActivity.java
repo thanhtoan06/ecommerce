@@ -1,10 +1,11 @@
 package com.example.ecommerce;
 
-import android.content.res.AssetManager;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,12 +16,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.File;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.io.File;
-import android.net.Uri;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class ProductDetailActivity extends AppCompatActivity {
@@ -162,10 +162,9 @@ public class ProductDetailActivity extends AppCompatActivity {
             String displayName = cursor.getString(cursor.getColumnIndexOrThrow("display_name"));
             String avatarPath = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
             String createdAt = cursor.getString(cursor.getColumnIndexOrThrow("created_at"));
-            long orderId = cursor.getLong(cursor.getColumnIndexOrThrow("order_id"));
             int rating = cursor.getInt(cursor.getColumnIndexOrThrow("rating"));
             tvName.setText(displayName + " · " + formatReviewDate(createdAt));
-            tvRating.setText(stars(rating) + " · Đơn #DH" + String.format(Locale.US, "%06d", orderId));
+            tvRating.setText(stars(rating));
             String comment = cursor.getString(cursor.getColumnIndexOrThrow("comment"));
             tvComment.setText(comment == null || comment.trim().isEmpty()
                     ? "Người mua chưa để lại nhận xét."
@@ -227,7 +226,9 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void openLogin() {
-        startActivity(new Intent(this, LoginActivity.class));
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.putExtra(LoginActivity.EXTRA_LOGIN_REQUIRED, true);
+        startActivity(intent);
     }
 
     private Bitmap loadAssetImage(String imagePath) {

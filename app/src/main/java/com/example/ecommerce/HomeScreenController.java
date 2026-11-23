@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class HomeTabController {
+public class HomeScreenController {
     private static final int SORT_DEFAULT = 0;
     private static final int SORT_PRICE_ASC = 1;
     private static final int SORT_PRICE_DESC = 2;
@@ -50,7 +50,7 @@ public class HomeTabController {
     private String selectedCategory = "Tất cả";
     private int selectedSort = SORT_DEFAULT;
 
-    public HomeTabController(AppCompatActivity activity, View root) {
+    public HomeScreenController(AppCompatActivity activity, View root) {
         this.activity = activity;
         this.root = root;
         databaseHelper = new DatabaseHelper(activity);
@@ -83,7 +83,7 @@ public class HomeTabController {
                 btnClearSearch.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
                 applyFilters();
             }
-            public void afterTextChanged(android.text.Editable s) {}
+            public void afterTextChanged(Editable s) {}
         });
         btnClearSearch.setOnClickListener(v -> edtSearch.setText(""));
         root.findViewById(R.id.btnResetFilter).setOnClickListener(v -> resetFilters());
@@ -93,7 +93,7 @@ public class HomeTabController {
     }
 
     public void refreshHeader() {
-        android.database.Cursor cursor = databaseHelper.getSessionUser();
+        Cursor cursor = databaseHelper.getSessionUser();
         TextView greeting = root.findViewById(R.id.tvUserGreeting);
         TextView email = root.findViewById(R.id.tvUserEmail);
         ImageView avatar = root.findViewById(R.id.ivHeaderAvatar);
@@ -275,15 +275,6 @@ public class HomeTabController {
         productAdapter.notifyDataSetChanged();
         gridProducts.setVisibility(shownProducts.isEmpty() ? View.GONE : View.VISIBLE);
         layoutEmpty.setVisibility(shownProducts.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    public void show() {
-        root.setVisibility(View.VISIBLE);
-        refreshHeader();
-    }
-
-    public void hide() {
-        root.setVisibility(View.GONE);
     }
 
     private int dp(int value) {

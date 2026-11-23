@@ -19,11 +19,13 @@ public class EditPhoneActivity extends AppCompatActivity {
         edtPhone = findViewById(R.id.edtPhone);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        Cursor cursor = databaseHelper.getSessionUser();
-        if (cursor != null && cursor.moveToFirst()) {
+        try (Cursor cursor = databaseHelper.getSessionUser()) {
+            if (cursor == null || !cursor.moveToFirst()) {
+                finish();
+                return;
+            }
             String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
             edtPhone.setText(phone == null ? "" : phone);
-            cursor.close();
         }
         edtPhone.setSelection(edtPhone.getText().length());
         findViewById(R.id.btnSavePhone).setOnClickListener(v -> save());
@@ -36,16 +38,21 @@ public class EditPhoneActivity extends AppCompatActivity {
             edtPhone.requestFocus();
             return;
         }
-        Cursor cursor = databaseHelper.getSessionUser();
-        if (cursor == null || !cursor.moveToFirst()) return;
-        String displayName = cursor.getString(cursor.getColumnIndexOrThrow("display_name"));
-        String username = cursor.getString(cursor.getColumnIndexOrThrow("username"));
-        String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-        String avatar = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
-        cursor.close();
-        if (databaseHelper.updateCurrentUserProfile(displayName, username, phone, address, avatar)) {
+        String displayName;
+        String address;
+        String avatar;
+        try (Cursor cursor = databaseHelper.getSessionUser()) {
+            if (cursor == null || !cursor.moveToFirst()) return;
+            displayName = cursor.getString(cursor.getColumnIndexOrThrow("display_name"));
+            address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+            avatar = cursor.getString(cursor.getColumnIndexOrThrow("avatar_path"));
+        }
+        if (databaseHelper.updateCurrentUserProfile(displayName, phone, address, avatar)) {
             Toast.makeText(this, "Đã lưu số điện thoại", Toast.LENGTH_SHORT).show();
             finish();
+        } else {
+            Toast.makeText(this, "Không thể cập nhật số điện thoại",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 }

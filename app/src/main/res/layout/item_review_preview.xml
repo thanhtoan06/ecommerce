@@ -46,7 +46,7 @@
         android:textColor="#F59E0B"
         android:textSize="13sp"
         android:textStyle="bold"
-        tools:text="★★★★★ · Đơn #DH200001" />
+        tools:text="★★★★★" />
 
     <TextView
         android:id="@+id/tvReviewComment"

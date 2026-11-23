@@ -13,6 +13,14 @@ import java.util.Date;
 import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+    public enum PasswordResetResult {
+        SUCCESS,
+        INVALID_INPUT,
+        ACCOUNT_NOT_FOUND,
+        SAME_AS_CURRENT,
+        UPDATE_FAILED
+    }
+
     public static final String DATABASE_NAME = "ecommerce.db";
     public static final int DATABASE_VERSION = 1;
 
@@ -356,7 +364,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put("display_name", displayName.trim());
-        values.put("username", username.trim().isEmpty() ? email.trim() : username.trim());
+        values.put("username", username.trim());
         values.put("email", email.trim());
         values.put("password_hash", hashPassword(password));
         values.put("phone", phone == null ? "" : phone.trim());
@@ -390,54 +398,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return -1;
     }
 
-    public boolean resetPassword(String identity, String phone, String newPassword) {
+    public PasswordResetResult resetPassword(
+            String identity, String phone, String newPassword) {
         if (identity == null || identity.trim().isEmpty()
                 || phone == null || phone.trim().isEmpty()
                 || newPassword == null || newPassword.length() < 6) {
-            return false;
+            return PasswordResetResult.INVALID_INPUT;
         }
 
         SQLiteDatabase db = getWritableDatabase();
         String value = identity.trim();
-        Cursor cursor = db.rawQuery(
-                "SELECT id FROM users WHERE phone = ? AND (username = ? OR email = ?)",
-                new String[]{phone.trim(), value, value});
-        if (!cursor.moveToFirst()) {
-            cursor.close();
-            return false;
+        long userId;
+        String currentPasswordHash;
+        try (Cursor cursor = db.rawQuery(
+                "SELECT id, password_hash FROM users " +
+                        "WHERE phone = ? AND (username = ? OR email = ?)",
+                new String[]{phone.trim(), value, value})) {
+            if (!cursor.moveToFirst()) {
+                return PasswordResetResult.ACCOUNT_NOT_FOUND;
+            }
+            userId = cursor.getLong(0);
+            currentPasswordHash = cursor.getString(1);
         }
 
-        long userId = cursor.getLong(0);
-        cursor.close();
+        String newPasswordHash = hashPassword(newPassword);
+        if (newPasswordHash.equals(currentPasswordHash)) {
+            return PasswordResetResult.SAME_AS_CURRENT;
+        }
         ContentValues values = new ContentValues();
-        values.put("password_hash", hashPassword(newPassword));
+        values.put("password_hash", newPasswordHash);
         return db.update(TABLE_USERS, values, "id = ?",
-                new String[]{String.valueOf(userId)}) == 1;
+                new String[]{String.valueOf(userId)}) == 1
+                ? PasswordResetResult.SUCCESS
+                : PasswordResetResult.UPDATE_FAILED;
     }
 
-    public boolean updateCurrentUserProfile(String displayName, String username,
-                                            String phone, String address,
-                                            String avatarPath) {
+    public boolean updateCurrentUserProfile(String displayName, String phone,
+                                            String address, String avatarPath) {
         long userId = getSessionUserId();
-        if (userId < 0
-                || displayName == null || displayName.trim().isEmpty()
-                || username == null || username.trim().isEmpty()) {
+        if (userId < 0 || displayName == null || displayName.trim().isEmpty()) {
             return false;
         }
 
         SQLiteDatabase db = getWritableDatabase();
-        Cursor duplicate = db.rawQuery(
-                "SELECT id FROM users WHERE username = ? AND id != ?",
-                new String[]{username.trim(), String.valueOf(userId)});
-        boolean exists = duplicate.moveToFirst();
-        duplicate.close();
-        if (exists) {
-            return false;
-        }
-
         ContentValues values = new ContentValues();
         values.put("display_name", displayName.trim());
-        values.put("username", username.trim());
         values.put("phone", phone == null ? "" : phone.trim());
         values.put("address", address == null ? "" : address.trim());
         if (avatarPath != null && !avatarPath.trim().isEmpty()) {
@@ -521,19 +526,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "SELECT p.*, c.name AS category_name FROM products p " +
                         "JOIN categories c ON c.id = p.category_id ORDER BY p.id ASC",
                 null);
-    }
-
-    public Cursor searchProducts(String keyword) {
-        if (keyword == null) {
-            keyword = "";
-        }
-        String pattern = "%" + keyword.trim() + "%";
-        return getReadableDatabase().rawQuery(
-                "SELECT p.*, c.name AS category_name FROM products p " +
-                        "JOIN categories c ON c.id = p.category_id " +
-                        "WHERE p.name LIKE ? ESCAPE '\\' OR c.name LIKE ? ESCAPE '\\' " +
-                        "ORDER BY p.name ASC",
-                new String[]{pattern, pattern});
     }
 
     public Cursor getProductById(long productId) {

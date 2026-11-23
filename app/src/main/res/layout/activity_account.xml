@@ -14,13 +14,87 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <LinearLayout style="@style/AppToolbar">
-            <TextView
-                style="@style/AppToolbarTitle"
-                android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_account_header"
+            android:elevation="4dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp">
+                <TextView
+                    style="@style/AppToolbarTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tài khoản của tôi" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Tài khoản của tôi" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="16dp">
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp">
+                    <ImageView
+                        android:id="@+id/ivAccountAvatar"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:clipToOutline="true"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_avatar_default" />
+                    <ImageButton
+                        android:id="@+id/btnEditAccountAvatar"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="end|bottom"
+                        android:layout_margin="2dp"
+                        android:background="@drawable/bg_edit_avatar_button"
+                        android:contentDescription="Đổi ảnh đại diện"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/white" />
+                </FrameLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tvAccountName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        tools:text="UserDemo" />
+                    <TextView
+                        android:id="@+id/tvAccountEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="#DCE6FF"
+                        android:textSize="13sp"
+                        tools:text="demo@shop.vn" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
 
         <ScrollView
@@ -35,64 +109,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/primary"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="12dp">
-                    <FrameLayout
-                        android:layout_width="64dp"
-                        android:layout_height="64dp">
-                        <ImageView
-                            android:id="@+id/ivAccountAvatar"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_gravity="center"
-                            android:background="@drawable/bg_avatar_circle"
-                            android:clipToOutline="true"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_avatar_default" />
-                        <ImageButton
-                            android:id="@+id/btnEditAccountAvatar"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="end|bottom"
-                            android:layout_margin="2dp"
-                            android:background="@drawable/bg_edit_avatar_button"
-                            android:contentDescription="Đổi ảnh đại diện"
-                            android:padding="6dp"
-                            android:src="@drawable/ic_edit"
-                            app:tint="@color/white" />
-                    </FrameLayout>
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/tvAccountName"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            tools:text="UserDemo" />
-                        <TextView
-                            android:id="@+id/tvAccountEmail"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textColor="#DCE6FF"
-                            android:textSize="13sp"
-                            tools:text="demo@shop.vn" />
-                    </LinearLayout>
-                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"

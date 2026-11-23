@@ -7,8 +7,8 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -23,6 +23,7 @@ import java.util.UUID;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText edtFullName;
+    private EditText edtUsername;
     private EditText edtEmail;
     private EditText edtPhone;
     private EditText edtPassword;
@@ -43,6 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         edtFullName = findViewById(R.id.edtFullName);
+        edtUsername = findViewById(R.id.edtRegisterUsername);
         edtEmail = findViewById(R.id.edtRegisterEmail);
         edtPhone = findViewById(R.id.edtRegisterPhone);
         edtPassword = findViewById(R.id.edtRegisterPassword);
@@ -117,6 +119,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void register() {
         String name = edtFullName.getText().toString().trim();
+        String username = edtUsername.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
         String phone = edtPhone.getText().toString().trim();
         String password = edtPassword.getText().toString();
@@ -125,6 +128,11 @@ public class RegisterActivity extends AppCompatActivity {
         if (name.isEmpty()) {
             edtFullName.setError("Vui lòng nhập họ và tên");
             edtFullName.requestFocus();
+            return;
+        }
+        if (username.isEmpty()) {
+            edtUsername.setError("Vui lòng nhập tên đăng nhập");
+            edtUsername.requestFocus();
             return;
         }
         if (email.isEmpty()) {
@@ -157,7 +165,7 @@ public class RegisterActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
 
         boolean created = new DatabaseHelper(this).registerUser(
-                name, email, email, password, phone, "", selectedAvatarPath);
+                name, username, email, password, phone, "", selectedAvatarPath);
         if (created) {
             Toast.makeText(this, "Đăng ký tài khoản thành công", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
