@@ -9,6 +9,7 @@
     tools:context=".EditNameActivity">
 
     <LinearLayout
+        android:id="@+id/topBar"
         style="@style/AppToolbar">
         <ImageView
             android:id="@+id/btnBack"

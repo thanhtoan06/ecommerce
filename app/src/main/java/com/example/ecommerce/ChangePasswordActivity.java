@@ -17,6 +17,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         EditText oldPassword = findViewById(R.id.edtOldPassword);

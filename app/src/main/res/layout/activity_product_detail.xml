@@ -27,12 +27,12 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/btnHeaderCart"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:clickable="true"
             android:focusable="true"
             app:cardBackgroundColor="#33FFFFFF"
-            app:cardCornerRadius="20dp"
+            app:cardCornerRadius="19dp"
             app:cardElevation="0dp"
             app:strokeColor="#66FFFFFF"
             app:strokeWidth="1dp">
@@ -171,9 +171,58 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="3dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="19sp"
+                    android:textStyle="bold"
+                    tools:text="iPhone 15 128GB" />
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="#EF4444"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:text="22.990.000 ₫" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvAvgStar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="★ 5,0"
+                        android:textColor="#F59E0B"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        tools:text="★ 5,0" />
+
+                    <TextView
+                        android:id="@+id/tvProductReviewSummary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        tools:text="(1 đánh giá) · Đã bán 18" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -204,64 +253,15 @@
                         tools:text="Còn 25 sp" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:lineSpacingExtra="2dp"
-                    android:textColor="@color/text_primary"
-                    android:textSize="19sp"
-                    android:textStyle="bold"
-                    tools:text="iPhone 15 128GB" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tvAvgStar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="★ 5,0"
-                        android:textColor="#F59E0B"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        tools:text="★ 5,0" />
-
-                    <TextView
-                        android:id="@+id/tvProductReviewSummary"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:layout_weight="1"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp"
-                        tools:text="(1 đánh giá) · Đã bán 18" />
-                </LinearLayout>
-
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginVertical="12dp"
+                    android:layout_marginVertical="14dp"
                     android:background="@color/card_stroke" />
-
-                <TextView
-                    android:id="@+id/tvPrice"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="#EF4444"
-                    android:textSize="23sp"
-                    android:textStyle="bold"
-                    tools:text="22.990.000 ₫" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -277,6 +277,7 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="34dp"
+                        android:background="@drawable/bg_quantity_stepper"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -284,18 +285,23 @@
                             android:id="@+id/btnDecrease"
                             android:layout_width="34dp"
                             android:layout_height="34dp"
-                            android:background="@drawable/bg_counter_btn"
+                            android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
                             android:text="−"
                             android:textColor="@color/text_primary"
-                            android:textSize="17sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="@color/card_stroke" />
 
                         <TextView
                             android:id="@+id/tvQuantity"
-                            android:layout_width="44dp"
+                            android:layout_width="40dp"
                             android:layout_height="match_parent"
                             android:gravity="center"
                             android:text="1"
@@ -304,17 +310,22 @@
                             android:textStyle="bold"
                             tools:text="1" />
 
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="@color/card_stroke" />
+
                         <TextView
                             android:id="@+id/btnIncrease"
                             android:layout_width="34dp"
                             android:layout_height="34dp"
-                            android:background="@drawable/bg_counter_btn"
+                            android:background="?attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
                             android:text="+"
                             android:textColor="@color/text_primary"
-                            android:textSize="17sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>

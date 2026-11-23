@@ -15,6 +15,7 @@ public class EditAddressActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_address);
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
         databaseHelper = new DatabaseHelper(this);
         edtAddress = findViewById(R.id.edtAddress);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());

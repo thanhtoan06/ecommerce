@@ -27,6 +27,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
 
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
+
         edtIdentity = findViewById(R.id.edtResetIdentity);
         edtPhone = findViewById(R.id.edtResetPhone);
         edtPassword = findViewById(R.id.edtResetPassword);

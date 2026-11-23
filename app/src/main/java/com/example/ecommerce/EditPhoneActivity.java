@@ -15,6 +15,7 @@ public class EditPhoneActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_phone);
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
         databaseHelper = new DatabaseHelper(this);
         edtPhone = findViewById(R.id.edtPhone);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());

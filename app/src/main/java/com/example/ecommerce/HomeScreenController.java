@@ -2,20 +2,21 @@ package com.example.ecommerce;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +44,8 @@ public class HomeScreenController {
     private LinearLayout layoutEmpty;
     private TextView tvCategoryLabel;
     private TextView tvSortLabel;
+    private View viewCategoryIndicator;
+    private View viewSortIndicator;
     private ProductAdapter productAdapter;
     private String selectedCategory = "Tất cả";
     private int selectedSort = SORT_DEFAULT;
@@ -64,6 +67,8 @@ public class HomeScreenController {
         layoutEmpty = root.findViewById(R.id.layoutEmpty);
         tvCategoryLabel = root.findViewById(R.id.tvCategoryLabel);
         tvSortLabel = root.findViewById(R.id.tvSortLabel);
+        viewCategoryIndicator = root.findViewById(R.id.viewCategoryIndicator);
+        viewSortIndicator = root.findViewById(R.id.viewSortIndicator);
     }
 
     private void setupHome() {
@@ -71,6 +76,8 @@ public class HomeScreenController {
         gridProducts.setAdapter(productAdapter);
         loadProducts();
         setupCategories();
+        updateCategoryIndicator();
+        updateSortIndicator();
 
         edtSearch.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -82,8 +89,8 @@ public class HomeScreenController {
         });
         btnClearSearch.setOnClickListener(v -> edtSearch.setText(""));
         root.findViewById(R.id.btnResetFilter).setOnClickListener(v -> resetFilters());
-        root.findViewById(R.id.btnCategory).setOnClickListener(this::showCategoryMenu);
-        root.findViewById(R.id.btnSort).setOnClickListener(this::showSortMenu);
+        root.findViewById(R.id.btnCategory).setOnClickListener(v -> showCategoryBottomSheet());
+        root.findViewById(R.id.btnSort).setOnClickListener(v -> showSortBottomSheet());
     }
 
     public void refreshHeader() {
@@ -162,55 +169,146 @@ public class HomeScreenController {
         }
     }
 
-    private void showCategoryMenu(View anchor) {
-        PopupMenu popupMenu = new PopupMenu(activity, anchor);
-        Menu menu = popupMenu.getMenu();
-        menu.setGroupCheckable(0, true, true);
-        for (int index = 0; index < categories.size(); index++) {
-            MenuItem item = menu.add(Menu.NONE, index, index, categories.get(index));
-            item.setCheckable(true);
-            item.setChecked(categories.get(index).equals(selectedCategory));
+    private void showCategoryBottomSheet() {
+        BottomSheetDialog dialog = new BottomSheetDialog(activity);
+        View sheetView = activity.getLayoutInflater().inflate(R.layout.layout_bottom_sheet_category, null);
+        dialog.setContentView(sheetView);
+
+        if (sheetView.getParent() != null) {
+            ((View) sheetView.getParent()).setBackgroundResource(android.R.color.transparent);
         }
-        popupMenu.setOnMenuItemClickListener(item -> {
-            selectedCategory = categories.get(item.getItemId());
-            tvCategoryLabel.setText(activity.getString(
-                    R.string.home_category_label, selectedCategory));
-            applyFilters();
-            return true;
-        });
-        popupMenu.show();
+
+        ImageView ivSheetIcon = sheetView.findViewById(R.id.ivSheetIcon);
+        TextView tvSheetTitle = sheetView.findViewById(R.id.tvSheetTitle);
+        ImageView btnCloseSheet = sheetView.findViewById(R.id.btnCloseSheet);
+        LinearLayout optionsContainer = sheetView.findViewById(R.id.layoutOptionsContainer);
+
+        ivSheetIcon.setImageResource(R.drawable.ic_category);
+        tvSheetTitle.setText(R.string.home_filter_category_title);
+        btnCloseSheet.setOnClickListener(v -> dialog.dismiss());
+        optionsContainer.removeAllViews();
+
+        int primaryColor = ContextCompat.getColor(activity, R.color.primary);
+        int textPrimaryColor = ContextCompat.getColor(activity, R.color.text_primary);
+
+        for (int i = 0; i < categories.size(); i++) {
+            String category = categories.get(i);
+            boolean isSelected = category.equals(selectedCategory);
+
+            View itemView = activity.getLayoutInflater().inflate(R.layout.item_filter_option, optionsContainer, false);
+            TextView tvOptionName = itemView.findViewById(R.id.tvOptionName);
+            ImageView ivOptionCheck = itemView.findViewById(R.id.ivOptionCheck);
+
+            tvOptionName.setText(category);
+            if (isSelected) {
+                itemView.setBackgroundResource(R.drawable.bg_filter_item_selected);
+                tvOptionName.setTextColor(primaryColor);
+                tvOptionName.setTypeface(null, Typeface.BOLD);
+                ivOptionCheck.setVisibility(View.VISIBLE);
+            } else {
+                itemView.setBackgroundResource(R.drawable.bg_filter_item_unselected);
+                tvOptionName.setTextColor(textPrimaryColor);
+                tvOptionName.setTypeface(null, Typeface.NORMAL);
+                ivOptionCheck.setVisibility(View.GONE);
+            }
+
+            itemView.setOnClickListener(v -> {
+                selectedCategory = category;
+                tvCategoryLabel.setText(selectedCategory);
+                updateCategoryIndicator();
+                applyFilters();
+                dialog.dismiss();
+            });
+
+            optionsContainer.addView(itemView);
+        }
+
+        dialog.show();
     }
 
-    private void showSortMenu(View anchor) {
-        PopupMenu popupMenu = new PopupMenu(activity, anchor);
-        Menu menu = popupMenu.getMenu();
-        String[] sortOptions = activity.getResources().getStringArray(R.array.home_sort_options);
-        menu.setGroupCheckable(0, true, true);
-        for (int index = 0; index < sortOptions.length; index++) {
-            MenuItem item = menu.add(Menu.NONE, index, index, sortOptions[index]);
-            item.setCheckable(true);
-            item.setChecked(selectedSort == index);
+    private void showSortBottomSheet() {
+        BottomSheetDialog dialog = new BottomSheetDialog(activity);
+        View sheetView = activity.getLayoutInflater().inflate(R.layout.layout_bottom_sheet_sort, null);
+        dialog.setContentView(sheetView);
+
+        if (sheetView.getParent() != null) {
+            ((View) sheetView.getParent()).setBackgroundResource(android.R.color.transparent);
         }
-        popupMenu.setOnMenuItemClickListener(item -> {
-            selectedSort = item.getItemId();
-            if (selectedSort == SORT_DEFAULT) {
-                tvSortLabel.setText(R.string.home_sort_label);
+
+        ImageView ivSheetIcon = sheetView.findViewById(R.id.ivSheetIcon);
+        TextView tvSheetTitle = sheetView.findViewById(R.id.tvSheetTitle);
+        ImageView btnCloseSheet = sheetView.findViewById(R.id.btnCloseSheet);
+        LinearLayout optionsContainer = sheetView.findViewById(R.id.layoutOptionsContainer);
+
+        ivSheetIcon.setImageResource(R.drawable.ic_sort);
+        tvSheetTitle.setText(R.string.home_filter_sort_title);
+        btnCloseSheet.setOnClickListener(v -> dialog.dismiss());
+        optionsContainer.removeAllViews();
+
+        String[] sortOptions = activity.getResources().getStringArray(R.array.home_sort_options);
+        int primaryColor = ContextCompat.getColor(activity, R.color.primary);
+        int textPrimaryColor = ContextCompat.getColor(activity, R.color.text_primary);
+
+        for (int i = 0; i < sortOptions.length; i++) {
+            final int index = i;
+            String sortName = sortOptions[i];
+            boolean isSelected = (selectedSort == index);
+
+            View itemView = activity.getLayoutInflater().inflate(R.layout.item_filter_option, optionsContainer, false);
+            TextView tvOptionName = itemView.findViewById(R.id.tvOptionName);
+            ImageView ivOptionCheck = itemView.findViewById(R.id.ivOptionCheck);
+
+            tvOptionName.setText(sortName);
+            if (isSelected) {
+                itemView.setBackgroundResource(R.drawable.bg_filter_item_selected);
+                tvOptionName.setTextColor(primaryColor);
+                tvOptionName.setTypeface(null, Typeface.BOLD);
+                ivOptionCheck.setVisibility(View.VISIBLE);
             } else {
-                tvSortLabel.setText(sortOptions[selectedSort]);
+                itemView.setBackgroundResource(R.drawable.bg_filter_item_unselected);
+                tvOptionName.setTextColor(textPrimaryColor);
+                tvOptionName.setTypeface(null, Typeface.NORMAL);
+                ivOptionCheck.setVisibility(View.GONE);
             }
-            applyFilters();
-            return true;
-        });
-        popupMenu.show();
+
+            itemView.setOnClickListener(v -> {
+                selectedSort = index;
+                if (selectedSort == SORT_DEFAULT) {
+                    tvSortLabel.setText(R.string.home_sort_label);
+                } else {
+                    tvSortLabel.setText(sortOptions[selectedSort]);
+                }
+                updateSortIndicator();
+                applyFilters();
+                dialog.dismiss();
+            });
+
+            optionsContainer.addView(itemView);
+        }
+
+        dialog.show();
+    }
+
+    private void updateCategoryIndicator() {
+        if (viewCategoryIndicator == null) return;
+        boolean isFiltered = !activity.getString(R.string.home_category_all).equals(selectedCategory);
+        viewCategoryIndicator.setVisibility(isFiltered ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateSortIndicator() {
+        if (viewSortIndicator == null) return;
+        boolean isSorted = (selectedSort != SORT_DEFAULT);
+        viewSortIndicator.setVisibility(isSorted ? View.VISIBLE : View.GONE);
     }
 
     private void resetFilters() {
         edtSearch.setText("");
         selectedCategory = activity.getString(R.string.home_category_all);
         selectedSort = SORT_DEFAULT;
-        tvCategoryLabel.setText(activity.getString(
-                R.string.home_category_label, selectedCategory));
+        tvCategoryLabel.setText(selectedCategory);
         tvSortLabel.setText(R.string.home_sort_label);
+        updateCategoryIndicator();
+        updateSortIndicator();
         applyFilters();
     }
 

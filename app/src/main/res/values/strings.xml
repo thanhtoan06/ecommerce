@@ -3,9 +3,13 @@
     <string name="home_search_hint">Tìm kiếm sản phẩm…</string>
     <string name="home_clear_search">Xóa nội dung tìm kiếm</string>
     <string name="home_category_all">Tất cả</string>
-    <string name="home_category_default_label">Danh mục: Tất cả</string>
-    <string name="home_category_label">Danh mục: %1$s</string>
-    <string name="home_sort_label">Sắp xếp</string>
+    <string name="home_category_default_label">Tất cả</string>
+    <string name="home_category_label">%1$s</string>
+    <string name="home_sort_label">Mặc định</string>
+    <string name="home_filter_category_title">Chọn danh mục</string>
+    <string name="home_filter_sort_title">Sắp xếp theo</string>
+    <string name="home_filter_category_caption">Danh mục</string>
+    <string name="home_filter_sort_caption">Sắp xếp</string>
     <string-array name="home_sort_options">
         <item>Mặc định</item>
         <item>Giá tăng dần</item>

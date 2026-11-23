@@ -7,10 +7,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,16 +22,10 @@ public class AccountActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WindowCompat.enableEdgeToEdge(getWindow());
         setContentView(R.layout.activity_account);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content),
-                (view, insets) -> {
-                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                    view.setPadding(systemBars.left, systemBars.top,
-                            systemBars.right, systemBars.bottom);
-                    return insets;
-                });
+        StatusBarUtils.setupHeader(this, findViewById(R.id.layoutAccountHeader));
+        StatusBarUtils.setupBottomNav(this, findViewById(R.id.bottomNavigation));
 
         accountController = new AccountScreenController(this,
                 findViewById(android.R.id.content),

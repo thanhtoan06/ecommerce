@@ -38,6 +38,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
 
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
+        StatusBarUtils.setupBottomNav(this, findViewById(R.id.bottomActionBar));
+
         databaseHelper = new DatabaseHelper(this);
         productId = getIntent().getLongExtra(EXTRA_PRODUCT_ID, -1);
         if (productId < 0) {

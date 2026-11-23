@@ -11,7 +11,7 @@
     <FrameLayout
         android:id="@+id/flIconContainer"
         android:layout_width="match_parent"
-        android:layout_height="136dp"
+        android:layout_height="146dp"
         android:background="@android:color/transparent">
 
         <ImageView
@@ -19,37 +19,57 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="Ảnh sản phẩm"
+            android:padding="8dp"
             android:scaleType="fitCenter"
-            android:padding="6dp"
             android:src="@drawable/ic_product_image_placeholder"
             tools:src="@drawable/ic_product_image_placeholder" />
     </FrameLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_product_info_bottom"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:paddingHorizontal="10dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/tvProductName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="iPhone 15 128GB"
+            android:textColor="@color/text_primary"
+            android:textSize="13.5sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvProductCategory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_chip_blue"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:paddingHorizontal="7dp"
-            android:paddingVertical="2dp"
-            android:textColor="@color/primary"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            tools:text="Điện thoại" />
+            <TextView
+                android:id="@+id/tvProductCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_chip_blue"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:text="Điện thoại"
+                android:textColor="@color/primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
             <View
                 android:layout_width="0dp"
@@ -62,28 +82,16 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:text="Còn 25 sp"
                 android:textColor="#0D9488"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                tools:text="Còn 25 sp" />
+                android:textSize="10sp"
+                android:textStyle="bold" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvProductName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            tools:text="iPhone 15 128GB" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -91,11 +99,10 @@
                 android:id="@+id/tvProductRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="★ 5,0"
+                android:text="★ 5.0"
                 android:textColor="#F59E0B"
                 android:textSize="11sp"
-                android:textStyle="bold"
-                tools:text="★ 5,0" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvProductSold"
@@ -105,10 +112,9 @@
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:text="(1) · Đã bán 18"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                tools:text="(1) · Đã bán 18" />
+                android:textSize="10sp" />
         </LinearLayout>
 
         <TextView
@@ -118,9 +124,9 @@
             android:layout_marginTop="5dp"
             android:ellipsize="end"
             android:maxLines="1"
+            android:text="22.990.000 ₫"
             android:textColor="#EF4444"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            tools:text="22.990.000 ₫" />
+            android:textSize="15.5sp"
+            android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>

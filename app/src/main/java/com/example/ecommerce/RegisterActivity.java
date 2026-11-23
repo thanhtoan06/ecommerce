@@ -43,6 +43,8 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
+
         edtFullName = findViewById(R.id.edtFullName);
         edtUsername = findViewById(R.id.edtRegisterUsername);
         edtEmail = findViewById(R.id.edtRegisterEmail);
