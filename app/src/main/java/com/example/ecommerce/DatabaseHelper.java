@@ -536,11 +536,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getProductReviews(long productId) {
+        return getProductReviews(productId, 0);
+    }
+
+    public Cursor getProductReviews(long productId, int starFilter) {
+        if (starFilter <= 0) {
+            return getReadableDatabase().rawQuery(
+                    "SELECT r.*, u.display_name, u.avatar_path " +
+                            "FROM reviews r JOIN users u ON u.id = r.user_id " +
+                            "WHERE r.product_id = ? ORDER BY r.created_at DESC",
+                    new String[]{String.valueOf(productId)});
+        }
         return getReadableDatabase().rawQuery(
                 "SELECT r.*, u.display_name, u.avatar_path " +
                         "FROM reviews r JOIN users u ON u.id = r.user_id " +
-                        "WHERE r.product_id = ? ORDER BY r.created_at DESC",
+                        "WHERE r.product_id = ? AND r.rating = ? ORDER BY r.created_at DESC",
+                new String[]{String.valueOf(productId), String.valueOf(starFilter)});
+    }
+
+    public int[] getProductRatingCounts(long productId) {
+        int[] counts = new int[6];
+        Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT rating, COUNT(*) FROM reviews WHERE product_id = ? GROUP BY rating",
                 new String[]{String.valueOf(productId)});
+        while (cursor.moveToNext()) {
+            int rating = cursor.getInt(0);
+            int count = cursor.getInt(1);
+            if (rating >= 1 && rating <= 5) {
+                counts[rating] = count;
+            }
+        }
+        cursor.close();
+        return counts;
     }
 
     public boolean addToCart(long productId, int quantity) {

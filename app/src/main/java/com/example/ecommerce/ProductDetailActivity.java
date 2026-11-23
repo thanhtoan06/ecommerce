@@ -5,16 +5,19 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.InputStream;
@@ -30,8 +33,31 @@ public class ProductDetailActivity extends AppCompatActivity {
     private long productId;
     private int stockQuantity;
     private int quantity = 1;
+    private int selectedStarFilter = 0;
+
     private TextView tvQuantity;
     private TextView tvHeaderCartCount;
+
+    private TextView tvRatingScore;
+    private TextView tvRatingStars;
+    private TextView tvRatingTotalCount;
+    private ProgressBar progressStar5;
+    private ProgressBar progressStar4;
+    private ProgressBar progressStar3;
+    private ProgressBar progressStar2;
+    private ProgressBar progressStar1;
+    private TextView tvCountStar5;
+    private TextView tvCountStar4;
+    private TextView tvCountStar3;
+    private TextView tvCountStar2;
+    private TextView tvCountStar1;
+
+    private TextView btnFilterAll;
+    private TextView btnFilter5Star;
+    private TextView btnFilter4Star;
+    private TextView btnFilter3Star;
+    private TextView btnFilter2Star;
+    private TextView btnFilter1Star;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +78,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvQuantity = findViewById(R.id.tvQuantity);
         tvHeaderCartCount = findViewById(R.id.tvHeaderCartCount);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-        findViewById(R.id.btnHeaderCart).setOnClickListener(v ->
-                openCartOrLogin());
+        findViewById(R.id.btnHeaderCart).setOnClickListener(v -> openCartOrLogin());
+
+        initReviewViews();
+        setupReviewFilterButtons();
 
         loadProduct();
         loadReviews();
@@ -82,6 +110,95 @@ public class ProductDetailActivity extends AppCompatActivity {
                 addToCart();
             }
         });
+    }
+
+    private void initReviewViews() {
+        tvRatingScore = findViewById(R.id.tvRatingScore);
+        tvRatingStars = findViewById(R.id.tvRatingStars);
+        tvRatingTotalCount = findViewById(R.id.tvRatingTotalCount);
+
+        progressStar5 = findViewById(R.id.progressStar5);
+        progressStar4 = findViewById(R.id.progressStar4);
+        progressStar3 = findViewById(R.id.progressStar3);
+        progressStar2 = findViewById(R.id.progressStar2);
+        progressStar1 = findViewById(R.id.progressStar1);
+
+        tvCountStar5 = findViewById(R.id.tvCountStar5);
+        tvCountStar4 = findViewById(R.id.tvCountStar4);
+        tvCountStar3 = findViewById(R.id.tvCountStar3);
+        tvCountStar2 = findViewById(R.id.tvCountStar2);
+        tvCountStar1 = findViewById(R.id.tvCountStar1);
+
+        btnFilterAll = findViewById(R.id.btnFilterAll);
+        btnFilter5Star = findViewById(R.id.btnFilter5Star);
+        btnFilter4Star = findViewById(R.id.btnFilter4Star);
+        btnFilter3Star = findViewById(R.id.btnFilter3Star);
+        btnFilter2Star = findViewById(R.id.btnFilter2Star);
+        btnFilter1Star = findViewById(R.id.btnFilter1Star);
+    }
+
+    private void setupReviewFilterButtons() {
+        btnFilterAll.setOnClickListener(v -> onFilterStarClicked(0));
+        btnFilter5Star.setOnClickListener(v -> onFilterStarClicked(5));
+        btnFilter4Star.setOnClickListener(v -> onFilterStarClicked(4));
+        btnFilter3Star.setOnClickListener(v -> onFilterStarClicked(3));
+        btnFilter2Star.setOnClickListener(v -> onFilterStarClicked(2));
+        btnFilter1Star.setOnClickListener(v -> onFilterStarClicked(1));
+    }
+
+    private void onFilterStarClicked(int star) {
+        if (selectedStarFilter == star) {
+            return;
+        }
+        selectedStarFilter = star;
+        updateFilterButtonStates();
+        loadReviews();
+    }
+
+    private void updateFilterButtonStates() {
+        TextView[] buttons = new TextView[]{btnFilterAll, btnFilter5Star, btnFilter4Star, btnFilter3Star, btnFilter2Star, btnFilter1Star};
+        int[] stars = new int[]{0, 5, 4, 3, 2, 1};
+        int primaryColor = ContextCompat.getColor(this, R.color.primary);
+        int secondaryColor = ContextCompat.getColor(this, R.color.text_secondary);
+
+        for (int i = 0; i < buttons.length; i++) {
+            boolean isSelected = (stars[i] == selectedStarFilter);
+            buttons[i].setBackgroundResource(isSelected ? R.drawable.bg_review_chip_selected : R.drawable.bg_review_chip_unselected);
+            buttons[i].setTextColor(isSelected ? primaryColor : secondaryColor);
+            buttons[i].setTypeface(null, isSelected ? Typeface.BOLD : Typeface.NORMAL);
+        }
+    }
+
+    private void updateReviewStatistics(double averageRating) {
+        int[] counts = databaseHelper.getProductRatingCounts(productId);
+        int total = counts[1] + counts[2] + counts[3] + counts[4] + counts[5];
+
+        tvRatingScore.setText(String.format(Locale.forLanguageTag("vi-VN"), "%.1f", averageRating));
+        int starCount = (int) Math.round(averageRating);
+        if (starCount < 0) starCount = 0;
+        if (starCount > 5) starCount = 5;
+        tvRatingStars.setText(stars(starCount));
+        tvRatingTotalCount.setText(total + " đánh giá");
+
+        tvCountStar5.setText(String.valueOf(counts[5]));
+        tvCountStar4.setText(String.valueOf(counts[4]));
+        tvCountStar3.setText(String.valueOf(counts[3]));
+        tvCountStar2.setText(String.valueOf(counts[2]));
+        tvCountStar1.setText(String.valueOf(counts[1]));
+
+        progressStar5.setProgress(total > 0 ? (counts[5] * 100 / total) : 0);
+        progressStar4.setProgress(total > 0 ? (counts[4] * 100 / total) : 0);
+        progressStar3.setProgress(total > 0 ? (counts[3] * 100 / total) : 0);
+        progressStar2.setProgress(total > 0 ? (counts[2] * 100 / total) : 0);
+        progressStar1.setProgress(total > 0 ? (counts[1] * 100 / total) : 0);
+
+        btnFilterAll.setText("Tất cả (" + total + ")");
+        btnFilter5Star.setText("5 sao (" + counts[5] + ")");
+        btnFilter4Star.setText("4 sao (" + counts[4] + ")");
+        btnFilter3Star.setText("3 sao (" + counts[3] + ")");
+        btnFilter2Star.setText("2 sao (" + counts[2] + ")");
+        btnFilter1Star.setText("1 sao (" + counts[1] + ")");
+        updateFilterButtonStates();
     }
 
     private void loadProduct() {
@@ -138,6 +255,8 @@ public class ProductDetailActivity extends AppCompatActivity {
             findViewById(R.id.btnAddToCart).setEnabled(false);
             findViewById(R.id.btnBuyNow).setEnabled(false);
         }
+
+        updateReviewStatistics(rating);
     }
 
     private void loadReviews() {
@@ -145,10 +264,15 @@ public class ProductDetailActivity extends AppCompatActivity {
         TextView emptyView = findViewById(R.id.tvProductReviewListEmpty);
         reviewContainer.removeAllViews();
 
-        Cursor cursor = databaseHelper.getProductReviews(productId);
+        Cursor cursor = databaseHelper.getProductReviews(productId, selectedStarFilter);
         if (cursor == null || !cursor.moveToFirst()) {
             if (cursor != null) {
                 cursor.close();
+            }
+            if (selectedStarFilter > 0) {
+                emptyView.setText("Chưa có đánh giá " + selectedStarFilter + " sao nào cho sản phẩm này.");
+            } else {
+                emptyView.setText("Chưa có đánh giá nào cho sản phẩm này.");
             }
             emptyView.setVisibility(View.VISIBLE);
             return;
