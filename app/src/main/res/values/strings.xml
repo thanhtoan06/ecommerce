@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">ecommerce</string>
+    <string name="home_search_hint">Tìm kiếm sản phẩm…</string>
+    <string name="home_clear_search">Xóa nội dung tìm kiếm</string>
+    <string name="home_category_all">Tất cả</string>
+    <string name="home_category_default_label">Danh mục: Tất cả</string>
+    <string name="home_category_label">Danh mục: %1$s</string>
+    <string name="home_sort_label">Sắp xếp</string>
+    <string-array name="home_sort_options">
+        <item>Mặc định</item>
+        <item>Giá tăng dần</item>
+        <item>Giá giảm dần</item>
+        <item>Lượt bán giảm dần</item>
+        <item>Số sao giảm dần</item>
+        <item>Tên A-Z</item>
+    </string-array>
 </resources>

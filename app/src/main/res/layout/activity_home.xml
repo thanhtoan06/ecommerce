@@ -65,54 +65,123 @@
                 <Button android:id="@+id/btnHomeRegister" android:layout_width="wrap_content" android:layout_height="40dp" android:background="@drawable/bg_search_white" android:text="Đăng ký" android:textAllCaps="false" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold" app:backgroundTint="@null" />
             </LinearLayout>
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="14dp"
-                android:gravity="center_vertical"
+                android:background="@drawable/bg_search_white"
+                android:elevation="2dp">
+                <EditText
+                    android:id="@+id/edtSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:drawableStart="@drawable/ic_search"
+                    android:drawablePadding="10dp"
+                    android:autofillHints="search"
+                    android:hint="@string/home_search_hint"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="38dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"
+                    android:textSize="13sp" />
+                <ImageView
+                    android:id="@+id/btnClearSearch"
+                    android:layout_width="38dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:clickable="true"
+                    android:contentDescription="@string/home_clear_search"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_close"
+                    android:visibility="gone"
+                    app:tint="@color/text_tertiary" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
                 <RelativeLayout
+                    android:id="@+id/btnCategory"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_search_white"
-                    android:elevation="2dp">
-                    <EditText android:id="@+id/edtSearch" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@null" android:drawableStart="@drawable/ic_search" android:drawablePadding="10dp" android:hint="Tìm kiếm sản phẩm..." android:maxLines="1" android:paddingStart="12dp" android:paddingEnd="38dp" android:textColor="@color/text_primary" android:textColorHint="@color/text_tertiary" android:textSize="13sp" />
-                    <ImageView android:id="@+id/btnClearSearch" android:layout_width="38dp" android:layout_height="match_parent" android:layout_alignParentEnd="true" android:clickable="true" android:focusable="true" android:padding="10dp" android:src="@drawable/ic_close" android:visibility="gone" app:tint="@color/text_tertiary" />
-                </RelativeLayout>
-                <LinearLayout
-                    android:id="@+id/btnSort"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="8dp"
                     android:background="@drawable/bg_search_white"
                     android:clickable="true"
                     android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp">
-                    <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_sort" app:tint="@color/primary" />
-                    <TextView android:id="@+id/tvSortLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="Sắp xếp" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:scrollbars="none">
-                <LinearLayout android:id="@+id/layoutCategoryTabs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_tab_active_white" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Tất cả" android:textColor="@color/primary" android:textSize="13sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:background="@drawable/bg_tab_inactive_translucent" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Điện thoại" android:textColor="@color/white" android:textSize="13sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:background="@drawable/bg_tab_inactive_translucent" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Điện tử" android:textColor="@color/white" android:textSize="13sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:background="@drawable/bg_tab_inactive_translucent" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Phụ kiện" android:textColor="@color/white" android:textSize="13sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:background="@drawable/bg_tab_inactive_translucent" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Thời trang" android:textColor="@color/white" android:textSize="13sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:background="@drawable/bg_tab_inactive_translucent" android:paddingHorizontal="14dp" android:paddingVertical="6dp" android:text="Nhà cửa" android:textColor="@color/white" android:textSize="13sp" />
-                </LinearLayout>
-            </HorizontalScrollView>
-
-            <LinearLayout android:id="@+id/layoutSortPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="@drawable/bg_sort_panel" android:orientation="vertical" android:padding="12dp" android:visibility="gone">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Sắp xếp sản phẩm" android:textColor="@color/text_primary" android:textSize="14sp" android:textStyle="bold" />
-                <GridLayout android:id="@+id/layoutSortOptions" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:columnCount="2" />
+                    android:paddingHorizontal="10dp">
+                    <TextView
+                        android:id="@+id/tvCategoryLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/ivCategoryArrow"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/home_category_default_label"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                    <ImageView
+                        android:id="@+id/ivCategoryArrow"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_expand_more"
+                        app:tint="@color/primary" />
+                </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/btnSort"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_search_white"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="10dp">
+                    <ImageView
+                        android:id="@+id/ivSortIcon"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_sort"
+                        app:tint="@color/primary" />
+                    <TextView
+                        android:id="@+id/tvSortLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="6dp"
+                        android:layout_toEndOf="@id/ivSortIcon"
+                        android:layout_toStartOf="@id/ivSortArrow"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/home_sort_label"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                    <ImageView
+                        android:id="@+id/ivSortArrow"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_expand_more"
+                        app:tint="@color/primary" />
+                </RelativeLayout>
             </LinearLayout>
         </LinearLayout>
 
