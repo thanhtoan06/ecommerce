@@ -71,8 +71,11 @@ public class BottomNavigationController {
             }
             return;
         }
-        String[] names = {"", "Giỏ hàng", "Đơn hàng"};
-        Toast.makeText(activity, names[index] + " sẽ được triển khai tiếp",
-                Toast.LENGTH_SHORT).show();
+        if (index == 2) {
+            if (!(activity instanceof OrdersActivity)) {
+                activity.startActivity(new Intent(activity, OrdersActivity.class));
+            }
+            return;
+        }
     }
 }

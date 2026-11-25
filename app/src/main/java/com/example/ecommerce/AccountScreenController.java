@@ -87,11 +87,9 @@ public class AccountScreenController {
         }
 
         root.findViewById(R.id.btnOrderHistory).setOnClickListener(v ->
-                Toast.makeText(activity, "Lịch sử đơn hàng sẽ được làm sau",
-                        Toast.LENGTH_SHORT).show());
+                activity.startActivity(new Intent(activity, OrderHistoryActivity.class)));
         root.findViewById(R.id.btnMyReviews).setOnClickListener(v ->
-                Toast.makeText(activity, "Đánh giá của tôi sẽ được làm sau",
-                        Toast.LENGTH_SHORT).show());
+                activity.startActivity(new Intent(activity, MyReviewsActivity.class)));
         View changePassword = root.findViewById(R.id.btnChangePassword);
         if (changePassword != null) {
             changePassword.setOnClickListener(v ->

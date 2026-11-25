@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.Intent;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,12 +39,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.Liste
         adapter = new CartAdapter(this, cartItems, this);
         lvCart.setAdapter(adapter);
 
-        btnCheckout.setOnClickListener(v -> {
-            // TODO (bước tiếp theo): mở màn hình đặt hàng
-            // startActivity(new Intent(this, CheckoutActivity.class));
-            Toast.makeText(this, "Màn hình đặt hàng sẽ làm ở bước tiếp theo",
-                    Toast.LENGTH_SHORT).show();
-        });
+        btnCheckout.setOnClickListener(v ->
+                startActivity(new Intent(this, CheckoutActivity.class)));
 
         // Tab Giỏ hàng có chỉ số 1
         BottomNavigationController.setupForActivity(this, 1);
