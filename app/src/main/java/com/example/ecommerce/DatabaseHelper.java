@@ -11,6 +11,8 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public enum PasswordResetResult {
@@ -626,6 +628,316 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int count = cursor.moveToFirst() ? cursor.getInt(0) : 0;
         cursor.close();
         return count;
+    }
+
+    public static final long ORDER_FAILED = -1;       // giỏ trống / chưa đăng nhập / lỗi
+    public static final long ORDER_OUT_OF_STOCK = -2; // có sản phẩm vượt quá tồn kho
+
+    // ---------- GIỎ HÀNG ----------
+
+    /** Danh sách sản phẩm trong giỏ của user hiện tại.
+     *  Cột: cart_id, product_id, quantity, name, price, image_path, stock_quantity, subtotal */
+    public Cursor getCartItems() {
+        long userId = getSessionUserId();
+        return getReadableDatabase().rawQuery(
+                "SELECT c.id AS cart_id, c.product_id, c.quantity, p.name, p.price, " +
+                        "p.image_path, p.stock_quantity, (c.quantity * p.price) AS subtotal " +
+                        "FROM cart_items c JOIN products p ON p.id = c.product_id " +
+                        "WHERE c.user_id = ? ORDER BY c.id ASC",
+                new String[]{String.valueOf(userId)});
+    }
+
+    /** Tổng tiền toàn bộ giỏ hàng. */
+    public double getCartTotal() {
+        long userId = getSessionUserId();
+        if (userId < 0) {
+            return 0;
+        }
+        Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT COALESCE(SUM(c.quantity * p.price), 0) " +
+                        "FROM cart_items c JOIN products p ON p.id = c.product_id " +
+                        "WHERE c.user_id = ?",
+                new String[]{String.valueOf(userId)});
+        double total = cursor.moveToFirst() ? cursor.getDouble(0) : 0;
+        cursor.close();
+        return total;
+    }
+
+    /** Đặt số lượng mới cho 1 dòng trong giỏ. Trả về false nếu <= 0 hoặc vượt tồn kho. */
+    public boolean updateCartQuantity(long cartId, int newQuantity) {
+        long userId = getSessionUserId();
+        if (userId < 0 || newQuantity <= 0) {
+            return false;
+        }
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT p.stock_quantity FROM cart_items ci " +
+                        "JOIN products p ON p.id = ci.product_id " +
+                        "WHERE ci.id = ? AND ci.user_id = ?",
+                new String[]{String.valueOf(cartId), String.valueOf(userId)});
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+        int stock = cursor.getInt(0);
+        cursor.close();
+        if (newQuantity > stock) {
+            return false;
+        }
+        ContentValues values = new ContentValues();
+        values.put("quantity", newQuantity);
+        return db.update(TABLE_CART_ITEMS, values, "id = ? AND user_id = ?",
+                new String[]{String.valueOf(cartId), String.valueOf(userId)}) == 1;
+    }
+
+    /** Xóa 1 sản phẩm khỏi giỏ. */
+    public boolean removeCartItem(long cartId) {
+        long userId = getSessionUserId();
+        if (userId < 0) {
+            return false;
+        }
+        return getWritableDatabase().delete(TABLE_CART_ITEMS, "id = ? AND user_id = ?",
+                new String[]{String.valueOf(cartId), String.valueOf(userId)}) == 1;
+    }
+
+    // ---------- ĐẶT HÀNG ----------
+
+    /**
+     * Đặt toàn bộ giỏ hàng. Trong 1 transaction:
+     * tạo đơn (Đang giao) + chi tiết đơn, trừ tồn kho, xóa giỏ.
+     * Trả về id đơn mới, hoặc ORDER_FAILED / ORDER_OUT_OF_STOCK.
+     */
+    public long placeOrder(String receiverName, String phone, String address, String note) {
+        long userId = getSessionUserId();
+        if (userId < 0
+                || receiverName == null || receiverName.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()
+                || address == null || address.trim().isEmpty()) {
+            return ORDER_FAILED;
+        }
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            List<double[]> items = new ArrayList<>(); // {productId, quantity, price}
+            double total = 0;
+            boolean enoughStock = true;
+
+            Cursor cursor = db.rawQuery(
+                    "SELECT ci.product_id, ci.quantity, p.price, p.stock_quantity " +
+                            "FROM cart_items ci JOIN products p ON p.id = ci.product_id " +
+                            "WHERE ci.user_id = ?",
+                    new String[]{String.valueOf(userId)});
+            while (cursor.moveToNext()) {
+                long productId = cursor.getLong(0);
+                int quantity = cursor.getInt(1);
+                double price = cursor.getDouble(2);
+                int stock = cursor.getInt(3);
+                if (quantity > stock) {
+                    enoughStock = false;
+                }
+                items.add(new double[]{productId, quantity, price});
+                total += quantity * price;
+            }
+            cursor.close();
+
+            if (items.isEmpty()) {
+                return ORDER_FAILED;
+            }
+            if (!enoughStock) {
+                return ORDER_OUT_OF_STOCK;
+            }
+
+            long orderId = insertOrder(db, userId, now(), STATUS_DELIVERING, total,
+                    receiverName.trim(), phone.trim(), address.trim(),
+                    note == null ? "" : note.trim());
+            if (orderId == -1) {
+                return ORDER_FAILED;
+            }
+
+            for (double[] item : items) {
+                long productId = (long) item[0];
+                int quantity = (int) item[1];
+                insertOrderDetail(db, orderId, productId, quantity, item[2]);
+                db.execSQL("UPDATE products SET stock_quantity = stock_quantity - ?, " +
+                                "sold_quantity = sold_quantity + ? WHERE id = ?",
+                        new Object[]{quantity, quantity, productId});
+            }
+
+            db.delete(TABLE_CART_ITEMS, "user_id = ?", new String[]{String.valueOf(userId)});
+            db.setTransactionSuccessful();
+            return orderId;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    // ---------- ĐƠN HÀNG ----------
+
+    /** Danh sách đơn của user hiện tại. status = null thì lấy tất cả.
+     *  Dùng STATUS_DELIVERING / STATUS_RECEIVED / STATUS_CANCELLED để lọc.
+     *  Cột: id, order_date, status, total_amount, receiver_name, phone, address, note */
+    public Cursor getOrdersByStatus(String status) {
+        long userId = getSessionUserId();
+        if (status == null) {
+            return getReadableDatabase().rawQuery(
+                    "SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC, id DESC",
+                    new String[]{String.valueOf(userId)});
+        }
+        return getReadableDatabase().rawQuery(
+                "SELECT * FROM orders WHERE user_id = ? AND status = ? " +
+                        "ORDER BY order_date DESC, id DESC",
+                new String[]{String.valueOf(userId), status});
+    }
+
+    /** Chi tiết các món của 1 đơn.
+     *  Cột: id, order_id, product_id, quantity, unit_price, subtotal, name, image_path */
+    public Cursor getOrderDetails(long orderId) {
+        return getReadableDatabase().rawQuery(
+                "SELECT od.*, p.name, p.image_path FROM order_details od " +
+                        "JOIN products p ON p.id = od.product_id " +
+                        "WHERE od.order_id = ? ORDER BY od.id ASC",
+                new String[]{String.valueOf(orderId)});
+    }
+
+    /** Chuỗi tóm tắt món của đơn, mỗi món 1 dòng: "• Tên x2". */
+    public String getOrderItemsSummary(long orderId) {
+        StringBuilder builder = new StringBuilder();
+        Cursor cursor = getOrderDetails(orderId);
+        while (cursor.moveToNext()) {
+            if (builder.length() > 0) {
+                builder.append("\n");
+            }
+            builder.append("• ")
+                    .append(cursor.getString(cursor.getColumnIndexOrThrow("name")))
+                    .append(" x")
+                    .append(cursor.getInt(cursor.getColumnIndexOrThrow("quantity")));
+        }
+        cursor.close();
+        return builder.toString();
+    }
+
+    /** Nút "Đã nhận hàng": Đang giao -> Đã nhận hàng. */
+    public boolean markOrderReceived(long orderId) {
+        long userId = getSessionUserId();
+        if (userId < 0) {
+            return false;
+        }
+        ContentValues values = new ContentValues();
+        values.put("status", STATUS_RECEIVED);
+        return getWritableDatabase().update(TABLE_ORDERS, values,
+                "id = ? AND user_id = ? AND status = ?",
+                new String[]{String.valueOf(orderId), String.valueOf(userId),
+                        STATUS_DELIVERING}) == 1;
+    }
+
+    /** Nút "Hủy đơn": Đang giao -> Đã hủy và cộng hoàn tồn kho. */
+    public boolean cancelOrder(long orderId) {
+        long userId = getSessionUserId();
+        if (userId < 0) {
+            return false;
+        }
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("status", STATUS_CANCELLED);
+            int updated = db.update(TABLE_ORDERS, values,
+                    "id = ? AND user_id = ? AND status = ?",
+                    new String[]{String.valueOf(orderId), String.valueOf(userId),
+                            STATUS_DELIVERING});
+            if (updated != 1) {
+                return false;
+            }
+
+            List<long[]> items = new ArrayList<>(); // {productId, quantity}
+            Cursor cursor = db.rawQuery(
+                    "SELECT product_id, quantity FROM order_details WHERE order_id = ?",
+                    new String[]{String.valueOf(orderId)});
+            while (cursor.moveToNext()) {
+                items.add(new long[]{cursor.getLong(0), cursor.getLong(1)});
+            }
+            cursor.close();
+
+            for (long[] item : items) {
+                db.execSQL("UPDATE products SET stock_quantity = stock_quantity + ?, " +
+                                "sold_quantity = MAX(sold_quantity - ?, 0) WHERE id = ?",
+                        new Object[]{item[1], item[1], item[0]});
+            }
+            db.setTransactionSuccessful();
+            return true;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    // ---------- ĐÁNH GIÁ ----------
+
+    /** Sản phẩm thuộc đơn "Đã nhận hàng" mà user chưa đánh giá.
+     *  Cột: product_id, order_id, name, image_path, order_date */
+    public Cursor getUnreviewedItems() {
+        long userId = getSessionUserId();
+        return getReadableDatabase().rawQuery(
+                "SELECT od.product_id, od.order_id, p.name, p.image_path, o.order_date " +
+                        "FROM order_details od " +
+                        "JOIN orders o ON o.id = od.order_id " +
+                        "JOIN products p ON p.id = od.product_id " +
+                        "WHERE o.user_id = ? AND o.status = ? " +
+                        "AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.user_id = o.user_id " +
+                        "AND r.product_id = od.product_id AND r.order_id = od.order_id) " +
+                        "ORDER BY o.order_date DESC, od.id ASC",
+                new String[]{String.valueOf(userId), STATUS_RECEIVED});
+    }
+
+    /** Các đánh giá user đã gửi.
+     *  Cột: id, product_id, order_id, rating, comment, created_at, name, image_path */
+    public Cursor getMyReviews() {
+        long userId = getSessionUserId();
+        return getReadableDatabase().rawQuery(
+                "SELECT r.*, p.name, p.image_path FROM reviews r " +
+                        "JOIN products p ON p.id = r.product_id " +
+                        "WHERE r.user_id = ? ORDER BY r.created_at DESC",
+                new String[]{String.valueOf(userId)});
+    }
+
+    /** Gửi đánh giá (1-5 sao). Chỉ cho phép với sản phẩm thuộc đơn "Đã nhận hàng" của user. */
+    public boolean addReview(long productId, long orderId, int rating, String comment) {
+        long userId = getSessionUserId();
+        if (userId < 0 || rating < 1 || rating > 5) {
+            return false;
+        }
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            Cursor cursor = db.rawQuery(
+                    "SELECT 1 FROM order_details od JOIN orders o ON o.id = od.order_id " +
+                            "WHERE o.id = ? AND o.user_id = ? AND o.status = ? " +
+                            "AND od.product_id = ?",
+                    new String[]{String.valueOf(orderId), String.valueOf(userId),
+                            STATUS_RECEIVED, String.valueOf(productId)});
+            boolean allowed = cursor.moveToFirst();
+            cursor.close();
+            if (!allowed) {
+                return false;
+            }
+
+            ContentValues values = new ContentValues();
+            values.put("user_id", userId);
+            values.put("product_id", productId);
+            values.put("order_id", orderId);
+            values.put("rating", rating);
+            values.put("comment", comment == null ? "" : comment.trim());
+            values.put("created_at", now());
+            if (db.insert(TABLE_REVIEWS, null, values) == -1) {
+                return false; // trùng (đã đánh giá rồi)
+            }
+
+            recalculateProductRating(db, productId);
+            db.setTransactionSuccessful();
+            return true;
+        } finally {
+            db.endTransaction();
+        }
     }
 
     private static String hashPassword(String password) {

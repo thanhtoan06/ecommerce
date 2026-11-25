@@ -65,6 +65,12 @@ public class BottomNavigationController {
             }
             return;
         }
+        if (index == 1) {
+            if (!(activity instanceof CartActivity)) {
+                activity.startActivity(new Intent(activity, CartActivity.class));
+            }
+            return;
+        }
         String[] names = {"", "Giỏ hàng", "Đơn hàng"};
         Toast.makeText(activity, names[index] + " sẽ được triển khai tiếp",
                 Toast.LENGTH_SHORT).show();
