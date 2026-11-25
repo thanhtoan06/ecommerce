@@ -1,5 +1,7 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.Cursor;
@@ -19,6 +21,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import java.io.File;
 import java.io.InputStream;
 import java.text.DecimalFormat;
@@ -32,10 +36,12 @@ public class ProductDetailActivity extends AppCompatActivity {
     private DatabaseHelper databaseHelper;
     private long productId;
     private int stockQuantity;
-    private int quantity = 1;
+    private double productPrice;
+    private String productName;
+    private String productImagePath;
+    private String productCategoryName;
     private int selectedStarFilter = 0;
 
-    private TextView tvQuantity;
     private TextView tvHeaderCartCount;
 
     private TextView tvRatingScore;
@@ -75,7 +81,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             return;
         }
 
-        tvQuantity = findViewById(R.id.tvQuantity);
         tvHeaderCartCount = findViewById(R.id.tvHeaderCartCount);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnHeaderCart).setOnClickListener(v -> openCartOrLogin());
@@ -87,29 +92,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         loadReviews();
         updateCartCount();
 
-        findViewById(R.id.btnDecrease).setOnClickListener(v -> {
-            if (quantity > 1) {
-                quantity--;
-                tvQuantity.setText(String.valueOf(quantity));
-            }
-        });
-        findViewById(R.id.btnIncrease).setOnClickListener(v -> {
-            if (quantity < stockQuantity) {
-                quantity++;
-                tvQuantity.setText(String.valueOf(quantity));
-            } else {
-                Toast.makeText(this, "Đã đạt số lượng tồn kho tối đa",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-        findViewById(R.id.btnAddToCart).setOnClickListener(v -> addToCart());
-        findViewById(R.id.btnBuyNow).setOnClickListener(v -> {
-            if (databaseHelper.getSessionUserId() < 0) {
-                openLogin();
-            } else {
-                addToCart();
-            }
-        });
+        findViewById(R.id.btnAddToCart).setOnClickListener(v -> showQuantityDialog(false));
+        findViewById(R.id.btnBuyNow).setOnClickListener(v -> showQuantityDialog(true));
     }
 
     private void initReviewViews() {
@@ -222,6 +206,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         int reviewCount = cursor.getInt(cursor.getColumnIndexOrThrow("review_count"));
         String categoryName = cursor.getString(cursor.getColumnIndexOrThrow("category_name"));
         cursor.close();
+        productName = name;
+        productPrice = price;
+        productImagePath = imagePath;
+        productCategoryName = categoryName;
 
         TextView tvName = findViewById(R.id.tvName);
         TextView tvCategory = findViewById(R.id.tvCategory);
@@ -248,10 +236,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
 
         if (stockQuantity <= 0) {
-            quantity = 0;
-            tvQuantity.setText("0");
-            findViewById(R.id.btnDecrease).setEnabled(false);
-            findViewById(R.id.btnIncrease).setEnabled(false);
             findViewById(R.id.btnAddToCart).setEnabled(false);
             findViewById(R.id.btnBuyNow).setEnabled(false);
         }
@@ -302,24 +286,114 @@ public class ProductDetailActivity extends AppCompatActivity {
         cursor.close();
     }
 
-    private void addToCart() {
+    private void showQuantityDialog(boolean buyNow) {
         if (databaseHelper.getSessionUserId() < 0) {
             openLogin();
             return;
         }
-        if (quantity <= 0) {
-            Toast.makeText(this, "Sản phẩm đã hết hàng", Toast.LENGTH_SHORT).show();
+        int availableQuantity = databaseHelper.getAvailableCartQuantity(productId);
+        if (availableQuantity <= 0) {
+            Toast.makeText(this, R.string.product_quantity_limit_reached,
+                    Toast.LENGTH_SHORT).show();
             return;
         }
-        boolean added = databaseHelper.addToCart(productId, quantity);
-        if (added) {
-            updateCartCount();
-            Toast.makeText(this, "Đã thêm " + quantity + " sản phẩm vào giỏ",
-                    Toast.LENGTH_SHORT).show();
+
+        View dialogView = LayoutInflater.from(this)
+                .inflate(R.layout.dialog_select_quantity, null, false);
+        ImageView ivDialogProductImage = dialogView.findViewById(R.id.ivDialogProductImage);
+        TextView tvDialogCategory = dialogView.findViewById(R.id.tvDialogCategory);
+        TextView tvDialogProductName = dialogView.findViewById(R.id.tvDialogProductName);
+        TextView tvDialogUnitPrice = dialogView.findViewById(R.id.tvDialogUnitPrice);
+        TextView tvDialogStock = dialogView.findViewById(R.id.tvDialogStock);
+        TextView tvDialogQuantity = dialogView.findViewById(R.id.tvDialogQuantity);
+        TextView tvDialogTotal = dialogView.findViewById(R.id.tvDialogQuantityTotal);
+        View btnDecrease = dialogView.findViewById(R.id.btnDialogQuantityDecrease);
+        View btnIncrease = dialogView.findViewById(R.id.btnDialogQuantityIncrease);
+        View btnClose = dialogView.findViewById(R.id.btnDialogClose);
+        TextView btnConfirm = dialogView.findViewById(R.id.btnDialogConfirm);
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        int[] selectedQuantity = {1};
+        int[] maxQuantity = {availableQuantity};
+
+        Bitmap productBitmap = loadAssetImage(productImagePath);
+        if (productBitmap != null) {
+            ivDialogProductImage.setImageBitmap(productBitmap);
         } else {
-            Toast.makeText(this, "Không thể thêm sản phẩm vào giỏ",
-                    Toast.LENGTH_SHORT).show();
+            ivDialogProductImage.setImageResource(R.drawable.ic_product_image_placeholder);
         }
+        tvDialogCategory.setText(productCategoryName);
+        tvDialogProductName.setText(productName);
+        tvDialogUnitPrice.setText(getString(
+                R.string.product_unit_price, formatPrice(productPrice) + " ₫"));
+        tvDialogStock.setText(getString(
+                R.string.product_stock_quantity, stockQuantity));
+        Runnable updateQuantityViews = () -> {
+            tvDialogQuantity.setText(String.valueOf(selectedQuantity[0]));
+            tvDialogTotal.setText(formatPrice(productPrice * selectedQuantity[0]) + " ₫");
+            btnDecrease.setEnabled(selectedQuantity[0] > 1);
+            btnIncrease.setEnabled(selectedQuantity[0] < maxQuantity[0]);
+        };
+        updateQuantityViews.run();
+
+        btnDecrease.setOnClickListener(v -> {
+            if (selectedQuantity[0] > 1) {
+                selectedQuantity[0]--;
+                updateQuantityViews.run();
+            }
+        });
+        btnIncrease.setOnClickListener(v -> {
+            if (selectedQuantity[0] < maxQuantity[0]) {
+                selectedQuantity[0]++;
+                updateQuantityViews.run();
+            }
+        });
+
+        btnConfirm.setOnClickListener(v -> {
+            long cartItemId = databaseHelper.addToCartAndGetCartId(
+                    productId, selectedQuantity[0]);
+            if (cartItemId <= 0) {
+                int latestAvailable = databaseHelper.getAvailableCartQuantity(productId);
+                if (latestAvailable < selectedQuantity[0]) {
+                    if (latestAvailable <= 0) {
+                        Toast.makeText(this, R.string.product_quantity_limit_reached,
+                                Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        return;
+                    }
+                    maxQuantity[0] = latestAvailable;
+                    selectedQuantity[0] = latestAvailable;
+                    updateQuantityViews.run();
+                }
+                Toast.makeText(this, R.string.product_quantity_add_failed,
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            updateCartCount();
+            dialog.dismiss();
+            if (buyNow) {
+                Intent intent = new Intent(this, CartActivity.class);
+                intent.putExtra(CartActivity.EXTRA_PRESELECT_CART_ID, cartItemId);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, getString(
+                        R.string.product_added_to_cart, selectedQuantity[0]),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        btnConfirm.setText(buyNow
+                ? R.string.product_quantity_buy_confirm
+                : R.string.product_quantity_add_confirm);
+        btnConfirm.setContentDescription(getString(buyNow
+                ? R.string.product_quantity_buy_confirm
+                : R.string.product_quantity_add_confirm));
+
+        dialog.setContentView(dialogView);
+        if (dialogView.getParent() != null) {
+            ((View) dialogView.getParent()).setBackgroundResource(android.R.color.transparent);
+        }
+        dialog.show();
     }
 
     private void updateCartCount() {
@@ -346,9 +420,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         if (databaseHelper.getSessionUserId() < 0) {
             openLogin();
         } else {
-            Toast.makeText(this,
-                    "Giỏ hàng hiện có " + databaseHelper.getCartItemCount() + " sản phẩm",
-                    Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, CartActivity.class));
         }
     }
 

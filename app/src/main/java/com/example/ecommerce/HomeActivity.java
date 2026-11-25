@@ -22,6 +22,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        BottomNavigationController.refreshBadges(this);
         if (homeController != null) {
             homeController.refreshHeader();
         }

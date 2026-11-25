@@ -1,5 +1,7 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;

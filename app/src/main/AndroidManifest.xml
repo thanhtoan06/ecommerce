@@ -67,6 +67,10 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".OrderDetailActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".MyReviewsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />

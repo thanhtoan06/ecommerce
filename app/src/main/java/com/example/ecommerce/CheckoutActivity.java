@@ -1,5 +1,7 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -15,6 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.io.InputStream;
 import java.text.DecimalFormat;
@@ -22,11 +27,16 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 public class CheckoutActivity extends AppCompatActivity {
+    public static final String EXTRA_SELECTED_CART_IDS = "selected_cart_ids";
+
     private DatabaseHelper databaseHelper;
+    private long[] selectedCartIds;
     private DecimalFormat priceFormat;
 
     private LinearLayout llCheckoutItems;
     private TextView tvCheckoutTotal;
+    private TextView tvCheckoutItemsSubtotal;
+    private TextView tvCheckoutShippingFee;
     private EditText etReceiverName;
     private EditText etReceiverPhone;
     private EditText etReceiverAddress;
@@ -37,22 +47,41 @@ public class CheckoutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
+        StatusBarUtils.setupHeader(this, findViewById(R.id.topBar));
+        View bottomCheckoutBar = findViewById(R.id.bottomCheckoutBar);
+        int bottomBarPadding = bottomCheckoutBar.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(bottomCheckoutBar, (view, insets) -> {
+            Insets navigationInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+            view.setPadding(view.getPaddingLeft(), view.getPaddingTop(),
+                    view.getPaddingRight(), bottomBarPadding + navigationInsets.bottom);
+            return insets;
+        });
+        ViewCompat.requestApplyInsets(bottomCheckoutBar);
 
         databaseHelper = new DatabaseHelper(this);
+        selectedCartIds = getIntent().getLongArrayExtra(EXTRA_SELECTED_CART_IDS);
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("vi-VN"));
         symbols.setGroupingSeparator('.');
         priceFormat = new DecimalFormat("#,##0", symbols);
 
         llCheckoutItems = findViewById(R.id.llCheckoutItems);
         tvCheckoutTotal = findViewById(R.id.tvCheckoutTotal);
+        tvCheckoutItemsSubtotal = findViewById(R.id.tvCheckoutItemsSubtotal);
+        tvCheckoutShippingFee = findViewById(R.id.tvCheckoutShippingFee);
         etReceiverName = findViewById(R.id.etReceiverName);
         etReceiverPhone = findViewById(R.id.etReceiverPhone);
         etReceiverAddress = findViewById(R.id.etReceiverAddress);
         etOrderNote = findViewById(R.id.etOrderNote);
         btnConfirmOrder = findViewById(R.id.btnConfirmOrder);
+        findViewById(R.id.btnCheckoutBack).setOnClickListener(v -> finish());
 
+        if (selectedCartIds == null || selectedCartIds.length == 0) {
+            Toast.makeText(this, R.string.cart_select_items_first, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         if (!loadItems()) {
-            Toast.makeText(this, "Giỏ hàng đang trống", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.cart_selected_items_missing, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -60,13 +89,12 @@ public class CheckoutActivity extends AppCompatActivity {
         btnConfirmOrder.setOnClickListener(v -> confirmOrder());
     }
 
-    /** Hiện danh sách sản phẩm sắp mua. Trả về false nếu giỏ trống. */
     private boolean loadItems() {
         llCheckoutItems.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(this);
         int count = 0;
 
-        Cursor cursor = databaseHelper.getCartItems();
+        Cursor cursor = databaseHelper.getCartItems(selectedCartIds);
         while (cursor.moveToNext()) {
             View row = inflater.inflate(R.layout.item_checkout, llCheckoutItems, false);
             String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
@@ -90,11 +118,13 @@ public class CheckoutActivity extends AppCompatActivity {
         }
         cursor.close();
 
-        tvCheckoutTotal.setText(formatPrice(databaseHelper.getCartTotal()));
-        return count > 0;
+        double itemsSubtotal = databaseHelper.getCartTotal(selectedCartIds);
+        tvCheckoutItemsSubtotal.setText(formatPrice(itemsSubtotal));
+        tvCheckoutShippingFee.setText(formatPrice(DatabaseHelper.SHIPPING_FEE));
+        tvCheckoutTotal.setText(formatPrice(itemsSubtotal + DatabaseHelper.SHIPPING_FEE));
+        return count == selectedCartIds.length;
     }
 
-    /** Tự điền sẵn tên, số điện thoại, địa chỉ từ tài khoản (vẫn sửa được). */
     private void prefillForm() {
         try (Cursor cursor = databaseHelper.getSessionUser()) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -131,11 +161,11 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
-        btnConfirmOrder.setEnabled(false); // tránh bấm 2 lần ra 2 đơn
-        long result = databaseHelper.placeOrder(name, phone, address, note);
+        btnConfirmOrder.setEnabled(false);
+        long result = databaseHelper.placeOrder(name, phone, address, note, selectedCartIds);
         if (result > 0) {
             Toast.makeText(this, "Đặt hàng thành công", Toast.LENGTH_SHORT).show();
-            finish(); // quay lại giỏ hàng (lúc này đã trống)
+            finish();
         } else if (result == DatabaseHelper.ORDER_OUT_OF_STOCK) {
             Toast.makeText(this,
                     "Có sản phẩm vượt quá số lượng tồn kho, vui lòng kiểm tra lại giỏ hàng",
@@ -152,7 +182,6 @@ public class CheckoutActivity extends AppCompatActivity {
         return priceFormat.format(value) + " ₫";
     }
 
-    // Giống hàm loadAssetImage trong ProductAdapter của Người 1
     private static Bitmap loadAssetImage(Context context, String imagePath) {
         if (imagePath == null || imagePath.isEmpty()) {
             return null;

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="4dp">
+
+    <View
+        android:id="@+id/viewOrderProductDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="10dp"
+        android:background="@color/divider" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_chip_blue">
+
+            <ImageView
+                android:id="@+id/ivOrderProductImage"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center"
+                android:background="@color/white"
+                android:contentDescription="@string/product_image_description"
+                android:padding="3dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_product_image_placeholder"
+                tools:src="@drawable/ic_product_image_placeholder" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvOrderProductName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="Tai nghe Sony WH-1000XM5 ×1" />
+
+            <TextView
+                android:id="@+id/tvOrderProductReview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                tools:visibility="gone"
+                tools:text="★★★★★ · Đã đánh giá" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llOrderProductActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        tools:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOrderProductReview"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="10dp"
+            android:text="@string/review_write"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            app:backgroundTint="@color/primary"
+            app:cornerRadius="8dp"
+            app:elevation="0dp"
+            tools:text="@string/review_view_edit" />
+
+        <TextView
+            android:id="@+id/btnOrderProductDetails"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical|end"
+            android:paddingHorizontal="8dp"
+            android:text="@string/order_view_product"
+            android:textColor="@color/primary"
+            android:textSize="12sp" />
+    </LinearLayout>
+</LinearLayout>

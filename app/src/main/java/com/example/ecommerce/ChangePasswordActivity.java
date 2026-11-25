@@ -1,5 +1,7 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.widget.EditText;

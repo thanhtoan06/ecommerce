@@ -2,7 +2,6 @@ package com.example.ecommerce;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -18,19 +16,22 @@ import java.util.Locale;
 
 public class ReviewAdapter extends BaseAdapter {
 
-    /** Một dòng: sản phẩm chưa đánh giá HOẶC đánh giá đã gửi. */
     public static class ReviewRow {
         public long productId;
         public long orderId;
         public String name;
         public String imagePath;
-        public String date;     // ngày đặt (chưa đánh giá) hoặc ngày đánh giá (đã đánh giá)
-        public int rating;      // chỉ dùng ở mục Đã đánh giá
-        public String comment;  // chỉ dùng ở mục Đã đánh giá
+        public String date;
+        public int rating;
+        public String comment;
     }
 
     public interface Listener {
         void onReview(ReviewRow row);
+
+        void onViewOrder(ReviewRow row);
+
+        void onViewProduct(ReviewRow row);
     }
 
     private final Context context;
@@ -46,7 +47,6 @@ public class ReviewAdapter extends BaseAdapter {
         this.inflater = LayoutInflater.from(context);
     }
 
-    /** true: mục Chưa đánh giá (hiện nút Đánh giá). false: mục Đã đánh giá (hiện sao + nhận xét). */
     public void setPendingMode(boolean pendingMode) {
         this.pendingMode = pendingMode;
     }
@@ -79,6 +79,8 @@ public class ReviewAdapter extends BaseAdapter {
             holder.doneBox = convertView.findViewById(R.id.llReviewDone);
             holder.stars = convertView.findViewById(R.id.tvReviewStars);
             holder.comment = convertView.findViewById(R.id.tvReviewComment);
+            holder.btnOrderDetails = convertView.findViewById(R.id.btnReviewOrderDetails);
+            holder.btnProductDetails = convertView.findViewById(R.id.btnReviewProductDetails);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -88,25 +90,29 @@ public class ReviewAdapter extends BaseAdapter {
         holder.name.setText(row.name);
 
         holder.image.setImageResource(R.drawable.ic_product_image_placeholder);
-        Bitmap bitmap = loadAssetImage(row.imagePath);
+        Bitmap bitmap = AssetImageLoader.load(context, row.imagePath);
         if (bitmap != null) {
             holder.image.setImageBitmap(bitmap);
         }
 
         if (pendingMode) {
             holder.meta.setText("Đơn hàng #" + row.orderId + " · " + formatDate(row.date));
-            holder.button.setVisibility(View.VISIBLE);
             holder.doneBox.setVisibility(View.GONE);
-            holder.button.setOnClickListener(v -> listener.onReview(row));
         } else {
-            holder.meta.setText("Đánh giá ngày " + formatDate(row.date));
-            holder.button.setVisibility(View.GONE);
+            holder.meta.setText("Đơn hàng #" + row.orderId
+                    + " · Đánh giá ngày " + formatDate(row.date));
             holder.doneBox.setVisibility(View.VISIBLE);
             holder.stars.setText(buildStars(row.rating));
             boolean hasComment = row.comment != null && !row.comment.trim().isEmpty();
             holder.comment.setVisibility(hasComment ? View.VISIBLE : View.GONE);
             holder.comment.setText(hasComment ? row.comment : "");
         }
+        holder.button.setVisibility(View.VISIBLE);
+        holder.button.setText(pendingMode
+                ? R.string.review_write : R.string.review_view_edit);
+        holder.button.setOnClickListener(v -> listener.onReview(row));
+        holder.btnOrderDetails.setOnClickListener(v -> listener.onViewOrder(row));
+        holder.btnProductDetails.setOnClickListener(v -> listener.onViewProduct(row));
         return convertView;
     }
 
@@ -118,7 +124,6 @@ public class ReviewAdapter extends BaseAdapter {
         return builder.toString();
     }
 
-    /** "2026-11-17 09:30:00" -> "17/11/2026 09:30" */
     private String formatDate(String raw) {
         try {
             Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).parse(raw);
@@ -128,33 +133,15 @@ public class ReviewAdapter extends BaseAdapter {
         }
     }
 
-    // Giống hàm loadAssetImage trong ProductAdapter của Người 1
-    private Bitmap loadAssetImage(String imagePath) {
-        if (imagePath == null || imagePath.isEmpty()) {
-            return null;
-        }
-        String normalizedPath = imagePath
-                .replace('\\', '/')
-                .replaceFirst("^/+", "")
-                .replaceFirst("^assets/", "");
-        try (InputStream input = context.getAssets().open(normalizedPath)) {
-            return BitmapFactory.decodeStream(input);
-        } catch (Exception ignored) {
-            try (InputStream input = context.getAssets().open(imagePath)) {
-                return BitmapFactory.decodeStream(input);
-            } catch (Exception finalError) {
-                return null;
-            }
-        }
-    }
-
     private static class ViewHolder {
         ImageView image;
         TextView name;
         TextView meta;
-        View button;
+        TextView button;
         View doneBox;
         TextView stars;
         TextView comment;
+        View btnOrderDetails;
+        View btnProductDetails;
     }
 }

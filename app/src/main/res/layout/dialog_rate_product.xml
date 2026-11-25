@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -12,7 +13,8 @@
         android:gravity="center"
         android:textColor="@color/text_primary"
         android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        tools:text="Tai nghe Sony WH-1000XM5" />
 
     <RatingBar
         android:id="@+id/rbRateStars"
@@ -24,17 +26,21 @@
         android:numStars="5"
         android:progressTint="#F59E0B"
         android:rating="5"
-        android:stepSize="1" />
+        android:stepSize="1"
+        tools:rating="4" />
 
     <EditText
         android:id="@+id/etReviewComment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input"
         android:gravity="top"
         android:hint="Nhập nhận xét của bạn"
         android:inputType="textMultiLine|textCapSentences"
         android:minLines="3"
+        android:padding="12dp"
         android:textColor="@color/text_primary"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        tools:text="Âm thanh rõ, chống ồn tốt và đeo thoải mái." />
 </LinearLayout>

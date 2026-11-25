@@ -1,11 +1,12 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -43,6 +44,32 @@ public class BottomNavigationController {
                     Typeface.DEFAULT, selected ? Typeface.BOLD : Typeface.NORMAL));
             items[i].setOnClickListener(v -> navigate(activity, databaseHelper, index));
         }
+    }
+
+    public static void refreshBadges(AppCompatActivity activity) {
+        TextView cartBadge = activity.findViewById(R.id.tvMenuCartBadge);
+        TextView ordersBadge = activity.findViewById(R.id.tvMenuOrdersBadge);
+        if (cartBadge == null || ordersBadge == null) {
+            return;
+        }
+
+        DatabaseHelper databaseHelper = new DatabaseHelper(activity);
+        setBadge(activity, cartBadge, databaseHelper.getCartItemCount(),
+                R.string.navigation_cart_badge_description);
+        setBadge(activity, ordersBadge,
+                databaseHelper.getOrderCountByStatus(DatabaseHelper.STATUS_DELIVERING),
+                R.string.navigation_orders_badge_description);
+    }
+
+    private static void setBadge(AppCompatActivity activity, TextView badge, int count,
+                                 int contentDescriptionResource) {
+        if (count <= 0) {
+            badge.setVisibility(View.GONE);
+            return;
+        }
+        badge.setText(count > 99 ? "99+" : String.valueOf(count));
+        badge.setContentDescription(activity.getString(contentDescriptionResource, count));
+        badge.setVisibility(View.VISIBLE);
     }
 
     private static void navigate(AppCompatActivity activity,

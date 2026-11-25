@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,38 +16,43 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class CartAdapter extends BaseAdapter {
 
-    /** Một dòng trong giỏ hàng. */
     public static class CartItem {
         public long cartId;
         public long productId;
         public String name;
+        public String categoryName;
         public String imagePath;
         public double price;
         public int quantity;
         public int stock;
     }
 
-    /** CartActivity lắng nghe các nút bấm trên từng dòng. */
     public interface Listener {
         void onIncrease(CartItem item);
 
         void onDecrease(CartItem item);
 
         void onRemove(CartItem item);
+
+        void onSelectionChanged(CartItem item, boolean selected);
     }
 
     private final Context context;
     private final List<CartItem> items;
+    private final Set<Long> selectedCartIds;
     private final Listener listener;
     private final LayoutInflater inflater;
     private final DecimalFormat priceFormat;
 
-    public CartAdapter(Context context, List<CartItem> items, Listener listener) {
+    public CartAdapter(Context context, List<CartItem> items, Set<Long> selectedCartIds,
+                       Listener listener) {
         this.context = context;
         this.items = items;
+        this.selectedCartIds = selectedCartIds;
         this.listener = listener;
         this.inflater = LayoutInflater.from(context);
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.forLanguageTag("vi-VN"));
@@ -75,22 +81,30 @@ public class CartAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.item_cart, parent, false);
             holder = new ViewHolder();
-            holder.image = convertView.findViewById(R.id.ivCartImage);
+            holder.selected = convertView.findViewById(R.id.cbCartItem);
+            holder.image = convertView.findViewById(R.id.ivCartProductImage);
+            holder.category = convertView.findViewById(R.id.tvCartCategory);
             holder.name = convertView.findViewById(R.id.tvCartName);
-            holder.price = convertView.findViewById(R.id.tvCartPrice);
-            holder.quantity = convertView.findViewById(R.id.tvCartQuantity);
+            holder.unitPrice = convertView.findViewById(R.id.tvCartUnitPrice);
+            holder.quantity = convertView.findViewById(R.id.tvQuantity);
             holder.subtotal = convertView.findViewById(R.id.tvCartSubtotal);
-            holder.minus = convertView.findViewById(R.id.btnCartMinus);
-            holder.plus = convertView.findViewById(R.id.btnCartPlus);
-            holder.remove = convertView.findViewById(R.id.btnCartRemove);
+            holder.minus = convertView.findViewById(R.id.btnMinus);
+            holder.plus = convertView.findViewById(R.id.btnPlus);
+            holder.remove = convertView.findViewById(R.id.btnDeleteCartItem);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
         CartItem item = getItem(position);
+        holder.selected.setOnCheckedChangeListener(null);
+        holder.selected.setChecked(selectedCartIds.contains(item.cartId));
+        holder.selected.setOnCheckedChangeListener((button, selected) ->
+                listener.onSelectionChanged(item, selected));
+        holder.category.setText(item.categoryName);
         holder.name.setText(item.name);
-        holder.price.setText(formatPrice(item.price));
+        holder.unitPrice.setText(context.getString(R.string.cart_item_unit_price,
+                formatPrice(item.price), item.stock));
         holder.quantity.setText(String.valueOf(item.quantity));
         holder.subtotal.setText(formatPrice(item.price * item.quantity));
 
@@ -113,7 +127,6 @@ public class CartAdapter extends BaseAdapter {
         return priceFormat.format(value) + " ₫";
     }
 
-    // Giống hàm loadAssetImage trong ProductAdapter của Người 1
     private Bitmap loadAssetImage(String imagePath) {
         if (imagePath == null || imagePath.isEmpty()) {
             return null;
@@ -134,13 +147,15 @@ public class CartAdapter extends BaseAdapter {
     }
 
     private static class ViewHolder {
+        CheckBox selected;
         ImageView image;
+        TextView category;
         TextView name;
-        TextView price;
+        TextView unitPrice;
         TextView quantity;
         TextView subtotal;
         TextView minus;
         TextView plus;
-        TextView remove;
+        ImageView remove;
     }
 }

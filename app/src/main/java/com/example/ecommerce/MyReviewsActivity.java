@@ -1,17 +1,15 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.database.Cursor;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -117,28 +115,23 @@ public class MyReviewsActivity extends AppCompatActivity implements ReviewAdapte
         lvReviews.setVisibility(empty ? View.GONE : View.VISIBLE);
     }
 
-    /** Bấm nút "Đánh giá": hiện hộp thoại chọn sao + nhận xét. */
     @Override
     public void onReview(ReviewAdapter.ReviewRow row) {
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_rate_product, null);
-        ((TextView) view.findViewById(R.id.tvRateProductName)).setText(row.name);
-        RatingBar ratingBar = view.findViewById(R.id.rbRateStars);
-        EditText etComment = view.findViewById(R.id.etReviewComment);
+        ReviewEditorDialog.show(this, databaseHelper, row.productId, row.orderId,
+                row.name, row.rating, row.comment, this::loadRows);
+    }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Đánh giá sản phẩm")
-                .setView(view)
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Gửi đánh giá", (dialog, which) -> {
-                    int stars = Math.max(1, Math.round(ratingBar.getRating()));
-                    boolean saved = databaseHelper.addReview(
-                            row.productId, row.orderId, stars,
-                            etComment.getText().toString());
-                    Toast.makeText(this,
-                            saved ? "Cảm ơn bạn đã đánh giá" : "Không thể gửi đánh giá",
-                            Toast.LENGTH_SHORT).show();
-                    loadRows();
-                })
-                .show();
+    @Override
+    public void onViewOrder(ReviewAdapter.ReviewRow row) {
+        Intent intent = new Intent(this, OrderDetailActivity.class);
+        intent.putExtra(OrderDetailActivity.EXTRA_ORDER_ID, row.orderId);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onViewProduct(ReviewAdapter.ReviewRow row) {
+        Intent intent = new Intent(this, ProductDetailActivity.class);
+        intent.putExtra(ProductDetailActivity.EXTRA_PRODUCT_ID, row.productId);
+        startActivity(intent);
     }
 }

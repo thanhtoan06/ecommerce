@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -22,7 +24,8 @@
             android:contentDescription="Ảnh sản phẩm"
             android:padding="4dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_product_image_placeholder" />
+            android:src="@drawable/ic_product_image_placeholder"
+            tools:src="@drawable/ic_product_image_placeholder" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -39,7 +42,8 @@
                 android:maxLines="2"
                 android:textColor="@color/text_primary"
                 android:textSize="13.5sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="Tai nghe Sony WH-1000XM5" />
 
             <TextView
                 android:id="@+id/tvReviewMeta"
@@ -47,31 +51,37 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                tools:text="Đơn hàng #1024 · 25/11/2026 10:30" />
 
-            <!-- Mục Chưa đánh giá -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnReviewNow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
                 android:layout_marginTop="8dp"
-                android:text="Đánh giá" />
+                android:text="@string/review_write"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="10dp"
+                tools:visibility="visible" />
 
-            <!-- Mục Đã đánh giá -->
             <LinearLayout
                 android:id="@+id/llReviewDone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="gone"
+                tools:visibility="gone">
 
                 <TextView
                     android:id="@+id/tvReviewStars"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#F59E0B"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:text="★★★★★" />
 
                 <TextView
                     android:id="@+id/tvReviewComment"
@@ -79,7 +89,49 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    tools:text="Âm thanh tốt, giao hàng nhanh và đóng gói cẩn thận." />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnReviewOrderDetails"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/review_view_order"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/primary"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="9dp"
+                    app:strokeColor="@color/card_stroke" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnReviewProductDetails"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="@string/review_view_product"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/primary"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="9dp"
+                    app:strokeColor="@color/card_stroke" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

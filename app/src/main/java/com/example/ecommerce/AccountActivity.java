@@ -1,5 +1,7 @@
 package com.example.ecommerce;
 
+import com.example.ecommerce.data.DatabaseHelper;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -40,6 +42,7 @@ public class AccountActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        BottomNavigationController.refreshBadges(this);
         if (accountController != null) {
             accountController.refresh();
         }
